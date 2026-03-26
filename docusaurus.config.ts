@@ -93,7 +93,7 @@ const config: Config = {
           position: 'right',
         },
         {
-          href: 'https://words.github.io',
+          href: 'https://krud-soft.github.io/words',
           label: 'GitHub',
           position: 'right',
         },
@@ -120,7 +120,7 @@ const config: Config = {
             },
             {
               label: 'GitHub',
-              href: 'https://words.github.io',
+              href: 'https://krud-soft.github.io/words',
             },
           ],
         },
