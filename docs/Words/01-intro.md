@@ -125,9 +125,6 @@ Through this design, modules can be added or removed with minimal coupling, and 
 
 Context is the information exchange unit in WORDS. It defines what a state receives and returns, and reaches beyond module boundaries through the `ContextProvider`. It is the structured, typed data that drives process transitions.
 
-Every context has explicitly defined fields and types — nothing is inferred or anonymous. A state can produce none, one, or multiple contexts, each declared in its `returns` block. A state that receives one or multiple context declares it in `receives`. If the context is optional — because the state can be entered with or without prior data — it is marked with a `?` prefix.
-
-
 Every context is explicitly declared with named properties and their types defined in a parenthesis block — nothing is inferred or anonymous. A state can produce none, one, or multiple contexts, each declared in its `returns` block. A state that receives a context declares it in `receives`, marking it with `?` if it is optional.
 
 ```wds title="AuthModule/contexts/AccountCredentials.wds"
@@ -138,7 +135,7 @@ context AccountCredentials (
 )
 ```
 
-```wds title="AuthModule/sates/SessionModule.wds"
+```wds title="AuthModule/states/SessionIdle.wds"
 module SessionModule
 state SessionIdle receives ?SessionValidationError (
     returns (StoredSession)
