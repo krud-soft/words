@@ -47,7 +47,7 @@ These constructs compose in a strict hierarchy. A system declares its modules. A
 
 ## What the Syntax Looks Like
 
-WORDS uses a lightweight parenthesis-block syntax. Every construct follows the same pattern: a keyword, a name, an optional description in quotes, and a body in parentheses.
+WORDS uses a lightweight parenthesis-block syntax. Every construct follows the same pattern: a keyword, a name — recommended in PascalCase — an optional description in quotes, and a body in parentheses.
 
 At the top of a WORDS project, the `system` construct names the application and lists its modules:
 
