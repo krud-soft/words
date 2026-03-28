@@ -33,10 +33,10 @@ A WORDS specification describes a system as a set of **state-driven behaviors** 
 | Organisation | `module` |
 | Behaviour | `process`, `state` |
 | Data | `context` |
-| UI | `screen`, `view` |
-| Logic | `provider` |
-| I/O | `adapter` |
-| Contracts | `interface` |
+| Component | `screen`, `view` |
+| Component | `provider` |
+| Component | `adapter` |
+| Component | `interface` |
 
 Each construct has a defined role, a defined relationship to other constructs, and a defined syntax. A state declares what it receives, what it can return, and what it mounts. A process declares every transition explicitly. An adapter is the only construct permitted to perform I/O. These constraints are not restrictions — they are the reason a WORDS specification can be handed to a model and reliably translated into correct, working code in any target language or framework.
 

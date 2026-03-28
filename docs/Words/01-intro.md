@@ -40,10 +40,10 @@ The second layer covers **components** — constructs that sit closer to impleme
 | `screen` | The top-level UI unit mounted by a state; has direct access to state data |
 | `view` | A reusable rendering unit; receives everything it needs via props |
 | `provider` | Computes and exposes in-memory data — normalized models, filtered collections, or registries — originating from within the system, not from external sources |
-| `adapter` | The I/O boundary; the only construct that communicates with external systems |
-| `interface` | A named contract — a handler shape, a domain model, or a service definition |
+| `adapter` | Bridges the system to external services, APIs, or hardware; the only construct permitted to perform async I/O |
+| `interface` | Defines the shape of components exposed by modules |
 
-These constructs compose in a strict hierarchy. A system declares its modules. A module owns its processes and states. A state mounts screens or adapters. A screen composes views. This structure is not enforced by a type system — it is enforced by the language itself. There is no valid way to write a WORDS specification that violates these relationships.
+These constructs compose in a strict hierarchy. A system declares its modules. A module owns its processes and states. A state mounts components. This structure is not enforced by a type system — it is enforced by the language itself. There is no valid way to write a WORDS specification that violates these relationships.
 
 ## What the Syntax Looks Like
 
@@ -51,7 +51,7 @@ WORDS uses a lightweight parenthesis-block syntax. Every construct follows the s
 
 At the top of a WORDS project, the `system` construct names the application and lists its modules:
 
-```wds
+```wds title="MyApplication.wds"
 system MyApplication "A full-stack web application" (
     modules (
         AuthModule
@@ -62,9 +62,9 @@ system MyApplication "A full-stack web application" (
 )
 ```
 
-Below the system, modules describe domains. Here is an authentication module with a single process:
+Each module in the system describes a distinct functionality. Here is an authentication module  showing the process of authentication:
 
-```wds
+```wds title="AuthModule/AuthModule.wds"
 module AuthModule "Handles authentication and deauthentication" (
 
     process Authentication (
@@ -83,20 +83,18 @@ module AuthModule "Handles authentication and deauthentication" (
 A few things are worth noticing here even before reading the full syntax reference:
 
 - The `when` rules in a process read almost like plain English. Each one names the current state, the context it produced, and the state to enter next — followed by a reason.
-- The quoted strings are not comments. On a `when` rule, the quoted string is a transition narrative — a human-readable explanation of why the system moves. It is always recommended.
-- `start` names the initial state of the module. Its presence signals that the module is stateful. A module without a `start` is stateless.
+- The quoted strings after a `when` rule are transition narratives — a human-readable explanation of why the system moves.
+- `start` names the initial state of the module.
 
-Constructs that belong to a module but are defined in their own files carry a `module` declaration on the line above them rather than being nested inside the module block:
+Constructs that belong to a module are written in their own files and carry a `module` declaration on one line before their declaration:
 
-```wds
+```wds title="AuthModule/states/Unauthenticated.wds"
 module AuthModule
 state Unauthenticated receives ?AuthError (
-    returns AccountCredentials
+    returns (AccountCredentials)
     mounts screen LoginScreen
 )
 ```
-
-Both forms are valid — the block form for compact modules, the standalone form for larger ones where each construct lives in its own file.
 
 ## How Modules Communicate
 
@@ -106,7 +104,7 @@ The first is the **interface**. A module can expose methods that other modules c
 
 The second is **publisher-subscriber**. A module declares a handler interface describing the shape of a callback. Other modules implement that interface and register themselves. When the owning module fires the event, every registered handler is called. The routing system works this way: `RoutingModule` dispatches URL changes, and each feature module registers its own paths and owns its own transitions entirely.
 
-```wds
+```wds title="ProductsModule/ProductsModule.wds"
 module ProductsModule (
 
     implements RoutingModule.RouteSwitchHandler (
@@ -118,46 +116,50 @@ module ProductsModule (
 
     RoutingModule.subscribeRoute path("/products") handler(ProductsModule)
 
-    start ProductList
 )
 ```
 
-This means adding a new feature module never requires touching an existing one. Each module subscribes to what it needs and handles its own behavior independently.
+Through this design, modules can be added or removed with minimal coupling, and implementations can safely check for their existence at runtime.
 
 ## The Role of Context
 
-Context is the currency of a WORDS system. It is how information moves from one state to the next, how external data enters the system through an adapter, and how shared state crosses module boundaries through the `ContextProvider`.
+Context is the information exchange unit in WORDS. It defines what a state receives and returns, and reaches beyond module boundaries through the `ContextProvider`. It is the structured, typed data that drives process transitions.
 
-A context is always typed and always declared. A state that can produce two different contexts declares both. A state that receives a context declares it in `receives`. If the context is optional — because the state can be entered either with prior data or cold — it is marked with a `?` prefix:
+Every context is explicitly declared with named properties and their types defined in a parenthesis block — nothing is inferred or anonymous. A state can produce none, one, or multiple contexts, each declared in its `returns` block. A state that receives a context declares it in `receives`, marking it with `?` if it is optional.
 
-```wds
+```wds title="AuthModule/contexts/AccountCredentials.wds"
 module AuthModule
 context AccountCredentials (
     user(string)
     password(string)
 )
+```
 
+```wds title="AuthModule/states/SessionIdle.wds"
 module SessionModule
 state SessionIdle receives ?SessionValidationError (
-    returns StoredSession
+    returns (StoredSession)
     mounts adapter SessionAdapter.checkSession
 )
 ```
 
-This makes the data flow of any system completely legible from the specification alone. You do not need to trace through code to understand what a state has access to or what it can produce. It is all written down.
+WORDS uses a consistent typing structure across all constructs: a name followed by its type in parentheses, such as `user(string)`, `expiresAt(number)`, or `returns(Module)`. A `?` prefix marks something as optional. A block or expression preceded by `if` or `if not` becomes a conditional evaluation, such as `if path("/home") enter Dashboard`.
+
+WORDS specifications are written in `.wds` files, organised under a root directory. Each module has its own folder named after it, with subdirectories for each construct type — `states`, `processes`, `contexts`, `screens`, `views`, `providers`, `adapters`, and `interfaces`. The `system` declaration lives at the root of directory. This structure mirrors the language hierarchy directly, making any WORDS project navigable without prior knowledge of the codebase.
 
 ## What You Will Find in This Documentation
 
 The rest of this documentation covers each construct in depth, with full syntax rules, examples, and design guidance. The recommended reading order follows the natural hierarchy of a WORDS system:
 
 1. **System** — the top-level descriptor and module registry
-2. **Modules** — the boundary of a domain
+2. **Modules** — the boundary of a functionality
 3. **Processes** — the transition maps that define behavior
-4. **States** — the conditions a system can be in
-5. **Contexts** — the data that flows between them
-6. **Interfaces** — contracts, models, and handler shapes
-7. **Components** — screens, views, providers, and adapters
-8. **Routing** — the navigation pattern
-9. **File Structure** — how a WORDS project is organised on disk
+4. **States** — the conditions a module can be in
+5. **Contexts** — the data that drives transitions
+6. **Screens** — the top-level UI unit mounted by a state
+7. **Views** — reusable rendering units composed by screens
+8. **Providers** — in-memory data computation and exposure
+9. **Adapters** — the I/O boundary to the outside world
+10. **Interfaces** — the shape of what modules expose
 
-If you have read this page, you already have the mental model. The sections ahead fill in the details.
+By now, you should have the mental model. The sections ahead fill in the details.
