@@ -100,7 +100,7 @@ state Unauthenticated receives ?AuthError (
 
 Modules are isolated by design. A module does not reach into another module's states or contexts directly. Instead, communication happens through two explicit mechanisms.
 
-The first is the **interface**. A module can expose methods that other modules call — for navigation, for accessing shared data, for triggering system-level behavior. The `AppModule`, present in every WORDS application, exposes two system-level interfaces: one for accessing any module by name, and one for persisting contexts across module boundaries.
+The first is the **interface**. A module can expose methods that other modules call — for navigation, for accessing shared data, for triggering system-level behavior. The `system` keyword exposes two system-level interfaces: one for accessing any module by name, and one for persisting contexts across module boundaries.
 
 The second is **publisher-subscriber**. A module declares a handler interface describing the shape of a callback. Other modules implement that interface and register themselves. When the owning module fires the event, every registered handler is called. The routing system works this way: `RoutingModule` dispatches URL changes, and each feature module registers its own paths and owns its own transitions entirely.
 
@@ -114,7 +114,7 @@ module ProductsModule (
         )
     )
 
-    RoutingModule.subscribeRoute path("/products") handler(ProductsModule)
+    system.RoutingModule.subscribeRoute path("/products") handler(ProductsModule)
 
 )
 ```
