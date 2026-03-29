@@ -163,6 +163,6 @@ The rest of this documentation covers each construct in depth, with full syntax 
 7. **Views** — reusable rendering units composed by screens
 8. **Providers** — in-memory data computation and exposure
 9. **Adapters** — the I/O boundary to the outside world
-10. **Interfaces** — the shape of what modules expose
+10. **Interfaces** — descriptors for components that don't fit the other constructors (models, helpers etc.) 
 
 By now, you should have the mental model. The sections ahead fill in the details.
