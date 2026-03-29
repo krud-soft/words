@@ -93,7 +93,7 @@ Constructs that belong to a module are written in their own files and carry a `m
 ```wds title="AuthModule/states/Unauthenticated.wds"
 module AuthModule
 state Unauthenticated receives ?AuthError (
-    returns (AccountCredentials)
+    returns AccountCredentials
     mounts screen LoginScreen
 )
 ```
@@ -139,7 +139,7 @@ context AccountCredentials (
 ```wds title="SessionModule/states/SessionIdle.wds"
 module SessionModule
 state SessionIdle receives ?SessionValidationError (
-    returns (StoredSession)
+    returns StoredSession
     mounts adapter SessionAdapter.checkSession
 )
 ```

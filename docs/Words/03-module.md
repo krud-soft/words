@@ -103,7 +103,7 @@ module ProductsModule (
         )
     )
 
-    system.RoutingModule.subscribeRoute path is "/products") handler is ProductsModule
+    system.RoutingModule.subscribeRoute path is "/products" handler is ProductsModule
 )
 ```
 
@@ -151,10 +151,8 @@ module CatalogueModule "Manages product browsing and search" (
         )
     )
 
-    system.RoutingModule.subscribeRoute path is "/catalogue" handleris CatalogueModule
-    system.RoutingModule.subscribeRoute path is "/catalogue/search" handleris CatalogueModule
-
-    start CatalogueList
+    system.RoutingModule.subscribeRoute path is "/catalogue" handler is CatalogueModule
+    system.RoutingModule.subscribeRoute path is "/catalogue/search" handler is CatalogueModule
 )
 ```
 
