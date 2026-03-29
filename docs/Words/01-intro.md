@@ -61,7 +61,8 @@ system MyApplication "A full-stack web application" (
 
     interface (
         getContext name(string) returns(context) "Retrieves the value of a stored context by its name"
-        setContext name(string) value(?context) "Stores a context by name, or clears it if no value is provided"
+        setContext name(string) value(context) "Stores a context by name"
+        dropContext name(string) "Clears a context identified by name"
     )
 )
 ```
@@ -104,7 +105,7 @@ Modules are isolated by design. A module does not reach into another module's st
 
 A module's API can take two forms. The first exposes access to runtime components within the module's own scope — other modules call these directly through the module's interface. The second exposes a subscription mechanism — a module declares a handler interface describing the shape of a callback, other modules implement that interface and register themselves, and when the owning module fires the event every registered handler is called.
 
-Context sharing across module boundaries is handled by `system` directly. A module can persist a context using `system.setContext()`, making it available to any other module that retrieves it using `system.getContext()`. This is the only mechanism through which contexts cross module boundaries.
+Context sharing across module boundaries is handled by `system` directly. A module can persist a context using `system.setContext()`, making it available to any other module that retrieves it using `system.getContext()`.
 
 The routing example illustrates the subscription mechanism: `RoutingModule` dispatches URL changes, and each module implements the handler interface, registers its own paths, and owns its own transitions entirely.
 
@@ -118,7 +119,7 @@ module ProductsModule (
         )
     )
 
-    system.RoutingModule.subscribeRoute path is "/products" handler is ProductsModule
+    system.RoutingModule.subscribeRoute path is "/products", handler is ProductsModule
 
 )
 ```

@@ -14,7 +14,7 @@ An engineer reading a `system` block can understand the shape of the entire appl
 
 ## Runtime Access
 
-Beyond naming and listing modules, `system` exposes runtime access to them — such as `system.RoutingModule` — and provides a built-in interface for persisting contexts across module boundaries. The interface exposes two methods: `getContext`, which retrieves a stored context by name, and `setContext`, which stores or clears one — passing no value removes the stored context entirely. These are the only behavioral concerns that live at the `system` level. Everything else belongs to the modules themselves.
+Beyond naming and listing modules, `system` exposes runtime access to them — such as `system.RoutingModule` — and provides a built-in interface for persisting contexts across module boundaries. The interface exposes three methods: `getContext`, which retrieves a stored context by name, `setContext`, which stores one, and dropContext() which removes the stored context entirely. These are the only behavioral concerns that live at the `system` level. Everything else belongs to the modules themselves.
 
 ## Syntax
 ```wds title="SystemName.wds"
@@ -27,7 +27,8 @@ system SystemName "A description of the application" (
 
     interface (
         getContext name(string) returns(context) "Retrieves the value of a stored context by its name"
-        setContext name(string) value(?context) "Stores a context by name, or clears it if no value is provided"
+        setContext name(string) value(context) "Stores a context by name"
+        dropContext name(string) "Removes a context from the system by name"
     )
 )
 ```
@@ -56,7 +57,8 @@ system NotesApp "A personal note-taking application" (
 
     interface (
         getContext name(string) returns(context) "Retrieves the value of a stored context by its name"
-        setContext name(string) value(?context) "Stores a context by name, or clears it if no value is provided"
+        setContext name(string) value(context) "Stores a context by name"
+        dropContext name(string) "Removes a context from the system by name"
     )
 )
 ```
@@ -75,7 +77,8 @@ system ShopFront "An e-commerce storefront" (
 
     interface (
         getContext name(string) returns(context) "Retrieves the value of a stored context by its name"
-        setContext name(string) value(?context) "Stores a context by name, or clears it if no value is provided"
+        setContext name(string) value(context) "Stores a context by name"
+        dropContext name(string) "Removes a context from the system by name"
     )
 )
 ```
@@ -92,7 +95,8 @@ system ReportingService "Internal data reporting and export service" (
 
     interface (
         getContext name(string) returns(context) "Retrieves the value of a stored context by its name"
-        setContext name(string) value(?context) "Stores a context by name, or clears it if no value is provided"
+        setContext name(string) value(context) "Stores a context by name"
+        dropContext name(string) "Removes a context from the system by name"
     )
 )
 ```
@@ -101,6 +105,6 @@ In each case, the `system` block communicates the scope of the application. The 
 
 ## Relationship to Other Constructs
 
-Every module listed in the `modules` block must have a corresponding module definition elsewhere in the project as the `system` construct does not define them and only declares that they exist.
+Every module listed in the `modules` block must have a corresponding module definition in the project root directory as the `system` construct does not define them and only declares that they exist.
 
 The `system` file rarely needs to change. New behavior is added by creating or modifying modules. The `system` file is only updated when a module is added to or removed from the application entirely.
