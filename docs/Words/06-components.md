@@ -30,7 +30,7 @@ A state can mount any component except `view` — so `screen`, `adapter`, `provi
 
 Every component that activates other components does so inside a `mounts` block. The block lists what is mounted, one per line. When more than one thing is mounted, the entries are separated by a comma:
 
-```wds
+```wds title="AuthModule/screens/LoginScreen.wds"
 module AuthModule
 screen LoginScreen (
     mounts (
@@ -49,7 +49,7 @@ screen LoginScreen (
 
 A single mount does not require a parenthesis block:
 
-```wds
+```wds title="SessionModule/states/SessionIdle.wds"
 module SessionModule
 state SessionIdle receives ?SessionValidationError (
     returns StoredSession
@@ -107,7 +107,7 @@ if state.context.status is "pending" (
 
 Conditional blocks can appear inside any component's `mounts` block. Each is evaluated independently. This is how components adapt what they mount depending on context — the state machine drives the condition, the component responds to it:
 
-```wds
+```wds title="AuthModule/screens/LoginScreen.wds"
 module AuthModule
 screen LoginScreen (
     mounts (
@@ -152,7 +152,7 @@ The iteration variable is bound with `as` and is available inside the body block
 
 `for ... as` can appear inside a `mounts` block alongside other entries:
 
-```wds
+```wds title="UIModule/screens/DashboardScreen.wds"
 module UIModule
 screen DashboardScreen (
     mounts (
@@ -174,7 +174,7 @@ screen DashboardScreen (
 
 Components compose by nesting. A `screen` mounts `view` components. A `view` can mount further `view` components. There is no depth limit, but the ownership direction is always the same: a parent passes data and handlers down; a child emits events or calls handlers upward.
 
-```wds
+```wds title="UIModule/screens/ProductScreen.wds"
 module UIModule
 screen ProductScreen (
     mounts (
@@ -207,7 +207,7 @@ Data moves through a component tree in one direction:
 
 A `screen` is the entry point for state data. It reads from `state.context` and passes what each child needs via props. Views never read `state.context` directly — they receive everything they need from their parent.
 
-```wds
+```wds title="UIModule/screens/OrderScreen.wds"
 module UIModule
 screen OrderScreen (
     mounts (
@@ -270,7 +270,7 @@ Each component lives in its own file, under a directory named after the componen
 
 Each file carries a `module` declaration on the line above the component definition:
 
-```wds
+```wds title="AuthModule/screens/LoginScreen.wds"
 module AuthModule
 screen LoginScreen (
     ...
