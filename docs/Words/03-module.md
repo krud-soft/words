@@ -98,12 +98,12 @@ module ProductsModule (
 
     implements RoutingModule.RouteSwitchHandler (
         switch path(string) (
-            if path("/products")
+            if path is "/products"
                 enter ProductList "The /products path activates the product list"
         )
     )
 
-    system.RoutingModule.subscribeRoute path("/products") handler(ProductsModule)
+    system.RoutingModule.subscribeRoute path is "/products") handler is ProductsModule
 )
 ```
 
@@ -144,15 +144,15 @@ module CatalogueModule "Manages product browsing and search" (
 
     implements RoutingModule.RouteSwitchHandler (
         switch path(string) (
-            if path("/catalogue")
+            if path is "/catalogue"
                 enter CatalogueList "The /catalogue path shows the full product list"
-            if path("/catalogue/search")
+            if path is "/catalogue/search"
                 enter CatalogueSearch "The /catalogue/search path activates the search view"
         )
     )
 
-    system.RoutingModule.subscribeRoute path("/catalogue") handler(CatalogueModule)
-    system.RoutingModule.subscribeRoute path("/catalogue/search") handler(CatalogueModule)
+    system.RoutingModule.subscribeRoute path is "/catalogue" handleris CatalogueModule
+    system.RoutingModule.subscribeRoute path is "/catalogue/search" handleris CatalogueModule
 
     start CatalogueList
 )

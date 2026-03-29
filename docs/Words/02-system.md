@@ -14,7 +14,7 @@ An engineer reading a `system` block can understand the shape of the entire appl
 
 ## Runtime Access
 
-Beyond naming and listing modules, `system` exposes runtime access to them — such as `system.RoutingModule` — and provides a built-in interface for persisting contexts across module boundaries. The interface exposes two methods: `getContext`, which retrieves a stored context by name and `setContext`, which stores or clears one — passing no value removes the stored context entirely. These are the only behavioral concerns that live at the `system` level. Everything else belongs to the modules themselves.
+Beyond naming and listing modules, `system` exposes runtime access to them — such as `system.RoutingModule` — and provides a built-in interface for persisting contexts across module boundaries. The interface exposes two methods: `getContext`, which retrieves a stored context by name, and `setContext`, which stores or clears one — passing no value removes the stored context entirely. These are the only behavioral concerns that live at the `system` level. Everything else belongs to the modules themselves.
 
 ## Syntax
 ```wds title="SystemName.wds"
