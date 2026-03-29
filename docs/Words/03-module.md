@@ -33,7 +33,7 @@ module AuthModule "Handles authentication and deauthentication" (
 )
 ```
 
-The presence of at least one process signals that the module is stateful — it defines states and transitions between them. The `start` declaration names the initial state for modules that enter one autonomously. A module without a `start` may still define processes, with its states being triggered externally through an event subscription or an exposed interface.
+The presence of at least one process signals that the module is stateful — it defines states and transitions between them. The `start` declaration names the initial state in which the module starts. A module without a `start` waits for a state to transition to be triggered through an event subscription or an exposed interface.
 
 ## Definition and Reference
 
@@ -103,7 +103,7 @@ module ProductsModule (
         )
     )
 
-    system.RoutingModule.subscribeRoute path is "/products" handler is ProductsModule
+    system.RoutingModule.subscribeRoute path is "/products", handler is ProductsModule
 )
 ```
 
@@ -151,8 +151,8 @@ module CatalogueModule "Manages product browsing and search" (
         )
     )
 
-    system.RoutingModule.subscribeRoute path is "/catalogue" handler is CatalogueModule
-    system.RoutingModule.subscribeRoute path is "/catalogue/search" handler is CatalogueModule
+    system.RoutingModule.subscribeRoute path is "/catalogue", handler is CatalogueModule
+    system.RoutingModule.subscribeRoute path is "/catalogue/search", handler is CatalogueModule
 )
 ```
 

@@ -40,7 +40,7 @@ A WORDS specification describes a system as a set of **state-driven behaviors** 
 
 Each construct has a defined role, a defined relationship to other constructs, and a defined syntax. A state declares what it receives, what it can return, and what it mounts. A process declares every transition explicitly. An adapter is the only construct permitted to perform I/O. These constraints are not restrictions — they are the reason a WORDS specification can be handed to a model and reliably translated into correct, working code in any target language or framework.
 
-The `system` construct exposes runtime access to modules and provides two built-in methods for sharing contexts across module boundaries: `system.getContext()` retrieves a stored context by name, and `system.setContext()` stores or clears one. These are the only behavioral concerns that live at the `system` level — everything else belongs to the modules themselves.
+The `system` construct exposes runtime access to modules and provides three built-in methods for sharing contexts across module boundaries: `system.getContext()` retrieves a stored context by name, `system.setContext()` stores a context while `system.dropContext()` clears it. These are the only behavioral concerns that live at the `system` level — everything else belongs to the modules themselves.
 
 ## Who It Is For
 
