@@ -36,10 +36,10 @@ screen LoginScreen (
     mounts (
         view AppUIModule.HeaderSection,
         view UIModule.LoginForm (
-            onSubmit handler is (
+            onSubmit callback is (
                 state.return(AccountCredentials)
             ),
-            onForgotPassword handler is (
+            onForgotPassword callback is (
                 state.return(RecoverAccount)
             )
         )
@@ -122,10 +122,10 @@ screen LoginScreen (
         )
 
         view UIModule.LoginForm (
-            onSubmit handler is (
+            onSubmit callback is (
                 state.return(AccountCredentials)
             ),
-            onForgotPassword handler is (
+            onForgotPassword callback is (
                 state.return(RecoverAccount)
             )
         )
@@ -183,7 +183,7 @@ screen ProductScreen (
             view UIModule.ProductBody (
                 view UIModule.ProductDescription text is state.context.description,
                 view UIModule.ProductActions (
-                    onAddToCart handler is (
+                    onAddToCart callback is (
                         state.return(CartItem)
                     )
                 )
@@ -214,7 +214,7 @@ screen OrderScreen (
         view UIModule.OrderSummary (
             items is state.context.items,
             total is state.context.total,
-            onConfirm handler is (
+            onConfirm callback is (
                 state.return(OrderConfirmed)
             )
         )
