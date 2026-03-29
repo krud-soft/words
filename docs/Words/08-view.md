@@ -4,9 +4,9 @@ title: View
 
 # View
 
-A `view` is a reusable rendering unit. It is mounted by screens or other views, and receives everything it needs — data, configuration, and interaction callbacks — via props. A view has no access to the state.
+A `view` is a reusable rendering unit. It is used by screens or other views, and receives everything it needs — data, configuration, and interaction callbacks — via props. A view has no access to the state.
 
-A view must always have a component parent. It cannot be mounted by a state directly.
+A view must always have a component parent. It cannot be used by a state directly.
 
 ## Purpose
 
@@ -78,18 +78,18 @@ Local state is for concerns that belong entirely to the view — input values, t
 
 ## Nesting
 
-A view can mount other views inside its own `mounts` block, composing larger UI units from smaller ones:
+A view can use other views inside its own `uses` block, composing larger UI units from smaller ones:
 
 ```wds title="UIModule/views/OrderSummary.wds"
 module UIModule
 view OrderSummary "Renders a summary of the current order" (
     props (
-        items(List(OrderItem))
-        total(number)
+        items(list(OrderItem))
+        total(float)
         onConfirm(OrderConfirmed)
         onCancel(OrderCancelled)
     )
-    mounts (
+    uses (
         view UIModule.OrderItemList items is props.items,
 
         view UIModule.OrderTotal total is props.total,
@@ -172,8 +172,8 @@ The file is named after the view it defines.
 
 ## Relationship to Other Constructs
 
-A view is mounted by a `screen` or by another `view`. It cannot be mounted by a `state` directly — a screen is always the entry point between the state and the view tree.
+A view is used by a `screen` or by another `view`. It cannot be used by a `state` directly — a screen is always the entry point between the state and the view tree.
 
 A view receives data from its parent via `props` and surfaces interactions upward via `props` callbacks. It has no access to `state.context` or `state.return()` — those are available only to the screen.
 
-A view can mount other views, composing larger UI units. It can reference views from other modules using their qualified name — `ModuleName.ViewName` — provided those views are exposed by their module.
+A view can use other views, composing larger UI units. It can reference views from other modules using their qualified name — `ModuleName.ViewName` — provided those views are exposed by their module.

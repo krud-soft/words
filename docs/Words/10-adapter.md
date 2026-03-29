@@ -184,6 +184,6 @@ The file is named after the adapter it defines.
 
 ## Relationship to Other Constructs
 
-An adapter is mounted by a `state` or consumed by a `provider` through its `props`. It is the only construct permitted to perform I/O and the only one permitted to be async — all external communication in the system flows through adapters.
+An adapter is used by a `state` or consumed by a `provider` through its `props`. It is the only construct permitted to perform I/O and the only one permitted to be async — all external communication in the system flows through adapters.
 
 An adapter exposes its methods through `interface`, whose parameter and return types are `interface` components — models, collections, or other typed contracts defined in the module. Its internal `state` is not accessible from outside — it is the adapter's own concern.

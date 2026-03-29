@@ -60,7 +60,7 @@ Constructs that belong to a module — states, processes, contexts, screens, and
 module AuthModule
 state Unauthenticated receives ?AuthError (
     returns AccountCredentials
-    mounts screen LoginScreen
+    uses screen LoginScreen
 )
 ```
 

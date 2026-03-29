@@ -6,7 +6,7 @@ title: Screen
 
 A `screen` is the top-level UI unit in a WORDS specification. It is the equivalent of a screen in a mobile application or a page in a web application — the full visual surface the user sees when a module is in a given state. A screen controls what is rendered, what is visible under which conditions, and what actions the user can take.
 
-A screen is always mounted by a state. It is never mounted by another component.
+A screen is always used by a state. It is never used by another component.
 
 ## Purpose
 
@@ -16,12 +16,12 @@ A screen does not implement logic. It does not compute data, perform I/O, or mak
 
 ## Syntax
 
-The `screen` keyword is followed by a name in PascalCase, an optional description in quotes, and a body in parentheses. The body contains a `mounts` block listing everything the screen activates:
+The `screen` keyword is followed by a name in PascalCase, an optional description in quotes, and a body in parentheses. The body contains a `uses` block listing everything the screen activates:
 
 ```wds title="AuthModule/screens/LoginScreen.wds"
 module AuthModule
 screen LoginScreen "The sign-in surface for unauthenticated users" (
-    mounts (
+    uses (
         view AppUIModule.HeaderSection,
         view UIModule.LoginForm (
             onSubmit callback is (
@@ -54,16 +54,16 @@ view UIModule.LogoutButton (
 )
 ```
 
-Both are available anywhere inside the screen's `mounts` block — in direct mounts, in conditional blocks, and inside nested view arguments.
+Both are available anywhere inside the screen's `uses` block — in direct mounts, in conditional blocks, and inside nested view arguments.
 
 ## Conditional Rendering
 
-A screen adapts what it mounts based on the state's received context. The `if` keyword conditionally activates a component when the context matches:
+A screen adapts what it uses based on the state's received context. The `if` keyword conditionally activates a component when the context matches:
 
 ```wds title="AuthModule/screens/LoginScreen.wds"
 module AuthModule
 screen LoginScreen (
-    mounts (
+    uses (
         if state.context is AccountDeauthenticated (
             view UIModule.Notification type is "warning", message is state.context.reason
         )
@@ -92,7 +92,7 @@ A screen that mounts a loading indicator while authentication is in progress:
 ```wds title="AuthModule/screens/AuthenticatingScreen.wds"
 module AuthModule
 screen AuthenticatingScreen "Shown while credentials are being verified" (
-    mounts (
+    uses (
         view UIModule.LoadingSpinner,
         view UIModule.StatusMessage text is "Verifying your credentials"
     )
@@ -104,7 +104,7 @@ A screen for an active session with navigation and user-specific content:
 ```wds title="SessionModule/screens/ActiveSessionScreen.wds"
 module SessionModule
 screen ActiveSessionScreen "The main surface for an authenticated user" (
-    mounts (
+    uses (
         view AppUIModule.NavigationBar (
             currentUser is state.context.fullName
         ),
@@ -123,7 +123,7 @@ A screen that iterates over a collection and renders a card for each item:
 ```wds title="NotificationsModule/screens/NotificationsScreen.wds"
 module NotificationsModule
 screen NotificationsScreen "Lists all notifications for the current user" (
-    mounts (
+    uses (
         view UIModule.PageHeader title is "Notifications",
 
         for state.context.notifications as notification (
@@ -159,8 +159,8 @@ The file is named after the screen it defines.
 
 ## Relationship to Other Constructs
 
-A screen is mounted by a `state`. The state determines when the screen is active and what context it receives. A screen cannot be mounted by any other component.
+A screen is used by a `state`. The state determines when the screen is active and what context it receives. A screen cannot be used by any other component.
 
-A screen mounts `view` components, passing them data from `state.context` and wiring their interactions to `state.return()`. Views have no access to the state — the screen is the only point of contact between the state and the view tree.
+A screen uses `view` components, passing them data from `state.context` and wiring their interactions to `state.return()`. Views have no access to the state — the screen is the only point of contact between the state and the view tree.
 
 A screen can reference components from other modules using their qualified name — `ModuleName.ComponentName` — provided those components are exposed by their module.

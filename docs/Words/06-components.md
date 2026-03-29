@@ -4,7 +4,7 @@ title: Components
 
 # Components
 
-Components are the constructs closest to implementation in a WORDS specification. They are what a state activates — the things that render UI, compute data, perform I/O, and expose behavior to the rest of the system.
+Components are the constructs closest to implementation in a WORDS specification. They are what a state uses — the things that render UI, compute data, perform I/O, and expose behavior to the rest of the system.
 
 There are five component types: `screen`, `view`, `provider`, `adapter`, and `interface`. Each has a distinct role and a defined set of rules about what it can access and what it can do. What they share is a common syntax for mounting, composing, and passing data — described on this page before the individual construct references.
 
@@ -12,28 +12,28 @@ There are five component types: `screen`, `view`, `provider`, `adapter`, and `in
 
 ## The Component Layer
 
-Components sit below the behavioral layer in the WORDS hierarchy. A `state` activates them — it does not implement them. The state declares what is mounted; the component defines what that means.
+Components sit below the behavioral layer in the WORDS hierarchy. A `state` activates them — it does not implement them. The state declares what is used; the component defines what that means.
 
 | Construct | Role |
 |---|---|
-| `screen` | Top-level UI unit; mounted by a state; has implicit access to `state.context` |
-| `view` | Reusable rendering unit; mounted by screens or other views; receives all data via props |
+| `screen` | Top-level UI unit; used by a state; has implicit access to `state.context` |
+| `view` | Reusable rendering unit; used by screens or other views; receives all data via props |
 | `provider` | Computes and exposes in-memory derived data; no I/O |
 | `adapter` | The only construct permitted to perform I/O; the only construct permitted to be async |
 | `interface` | Descriptors for components that don't fit the other constructs — models, helpers, and any other named, typed contract |
 
-A state can mount any component except `view` — so `screen`, `adapter`, `provider`, and `interface` are all valid state mounts. A `view` must always have a component parent that passes it what it needs.
+A state can use any component except `view` — so `screen`, `adapter`, `provider`, and `interface` are all valid state mounts. A `view` must always have a component parent that passes it what it needs.
 
 ---
 
-## The `mounts` Block
+## The `uses` Block
 
-Every component that activates other components does so inside a `mounts` block. The block lists what is mounted, one per line. When more than one thing is mounted, the entries are separated by a comma:
+Every component that activates other components does so inside a `uses` block. The block lists what is used, one per line. When more than one thing is used, the entries are separated by a comma:
 
 ```wds title="AuthModule/screens/LoginScreen.wds"
 module AuthModule
 screen LoginScreen (
-    mounts (
+    uses (
         view AppUIModule.HeaderSection,
         view UIModule.LoginForm (
             onSubmit callback is (
@@ -47,17 +47,17 @@ screen LoginScreen (
 )
 ```
 
-A single mount does not require a parenthesis block:
+A single entry does not require a parenthesis block:
 
 ```wds title="SessionModule/states/SessionIdle.wds"
 module SessionModule
 state SessionIdle receives ?SessionValidationError (
     returns StoredSession
-    mounts adapter SessionAdapter.checkSession
+    uses adapter SessionAdapter.checkSession
 )
 ```
 
-The `mounts` block is available to all components and to `state`.
+The `uses` block is available to all components and to `state`.
 
 ---
 
@@ -81,7 +81,7 @@ This syntax is consistent with the rest of the WORDS language. The `is` keyword 
 
 ## Conditional Mounting
 
-A component is conditionally mounted using `if`. The condition evaluates the current state's context — what type it is, or what value a property holds:
+A component is conditionally useed using `if`. The condition evaluates the current state's context — what type it is, or what value a property holds:
 
 ```wds
 if state.context is AccountDeauthenticated (
@@ -105,12 +105,12 @@ if state.context.status is "pending" (
 )
 ```
 
-Conditional blocks can appear inside any component's `mounts` block. Each is evaluated independently. This is how components adapt what they mount depending on context — the state machine drives the condition, the component responds to it:
+Conditional blocks can appear inside any component's `uses` block. Each is evaluated independently. This is how components adapt what they mount depending on context — the state machine drives the condition, the component responds to it:
 
 ```wds title="AuthModule/screens/LoginScreen.wds"
 module AuthModule
 screen LoginScreen (
-    mounts (
+    uses (
         view AppUIModule.HeaderSection,
 
         if state.context is AccountDeauthenticated (
@@ -150,12 +150,12 @@ for state.context.notifications as notification (
 
 The iteration variable is bound with `as` and is available inside the body block. Each item in the collection produces one mounted instance of the child component.
 
-`for ... as` can appear inside a `mounts` block alongside other entries:
+`for ... as` can appear inside a `uses` block alongside other entries:
 
 ```wds title="UIModule/screens/DashboardScreen.wds"
 module UIModule
 screen DashboardScreen (
-    mounts (
+    uses (
         view UIModule.PageHeader title is "Dashboard",
 
         for state.context.notifications as notification (
@@ -172,12 +172,12 @@ screen DashboardScreen (
 
 ## Nesting
 
-Components compose by nesting. A `screen` mounts `view` components. A `view` can mount further `view` components. There is no depth limit, but the ownership direction is always the same: a parent passes data and handlers down; a child emits events or calls handlers upward.
+Components compose by nesting. A `screen` uses `view` components. A `view` can mount further `view` components. There is no depth limit, but the ownership direction is always the same: a parent passes data and handlers down; a child emits events or calls handlers upward.
 
 ```wds title="UIModule/screens/ProductScreen.wds"
 module UIModule
 screen ProductScreen (
-    mounts (
+    uses (
         view UIModule.ProductLayout (
             view UIModule.ProductHeader title is state.context.name,
             view UIModule.ProductBody (
@@ -193,7 +193,7 @@ screen ProductScreen (
 )
 ```
 
-A `screen` is always the root of a UI component tree. A `view` must always have a component parent that passes it what it needs — it cannot be mounted by a state directly.
+A `screen` is always the root of a UI component tree. A `view` must always have a component parent that passes it what it needs — it cannot be used by a state directly.
 
 ---
 
@@ -210,7 +210,7 @@ Every component can declare a `state` block for instance-level data it owns and 
 ```wds title="UIModule/screens/OrderScreen.wds"
 module UIModule
 screen OrderScreen (
-    mounts (
+    uses (
         view UIModule.OrderSummary (
             items is state.context.items,
             total is state.context.total,
@@ -235,10 +235,10 @@ view AppUIModule.HeaderSection
 view UIModule.Notification type is "warning", message is state.context.reason
 ```
 
-This applies to all component types, including `interface`. An `interface` defined in one module can be mounted by a state, a screen, or a view in another module using the same qualified name syntax:
+This applies to all component types, including `interface`. An `interface` defined in one module can be used by a state, a screen, or a view in another module using the same qualified name syntax:
 
 ```wds
-mounts interface UIModule.PaginationModel page is state.context.page, total is state.context.total
+uses interface UIModule.PaginationModel page is state.context.page, total is state.context.total
 ```
 
 Only components that are explicitly exposed by a module can be referenced this way.

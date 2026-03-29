@@ -190,6 +190,6 @@ The file is named after the provider it defines.
 
 ## Relationship to Other Constructs
 
-A provider is mounted by a `state` or consumed by another component through its `interface`. It receives adapters and interface components through `props` and delegates all I/O to them — a provider never performs I/O directly.
+A provider is used by a `state` or consumed by another component through its `interface`. It receives adapters and interface components through `props` and delegates all I/O to them — a provider never performs I/O directly.
 
 A provider exposes its data through `interface` methods whose return types are `interface` components — models, collections, or other typed contracts defined in the module. Its internal `state` is not accessible directly from outside — only through the methods the `interface` declares.

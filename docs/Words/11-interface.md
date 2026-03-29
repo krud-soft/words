@@ -16,7 +16,7 @@ Because every other component's `interface` block declares parameter and return 
 
 ## Syntax
 
-The `interface` keyword is followed by a name in PascalCase, an optional description in quotes, and a body in parentheses. The body declares `props`, optionally `state`, any methods the contract exposes, and optionally a `mounts` block:
+The `interface` keyword is followed by a name in PascalCase, an optional description in quotes, and a body in parentheses. The body declares `props`, optionally `state`, any methods the contract exposes, and optionally a `uses` block:
 
 ```wds title="ProductsModule/interfaces/Product.wds"
 module ProductsModule
@@ -115,7 +115,7 @@ interface OrderDetail "Represents a fully detailed order" (
         items(list(OrderItem)) is []
         shippingAddress(?ShippingAddress)
     )
-    mounts (
+    uses (
         adapter OrdersModule.OrdersAdapter.loadOrderItems orderId is props.id, onLoad callback is (
             state.items
         ),
@@ -132,7 +132,7 @@ interface OrderDetail "Represents a fully detailed order" (
 
 The `onLoad` callback receives the data from the adapter and stores it in `state`. The methods `getItems` and `getShippingAddress` return it from state. The consumer calls the methods without any knowledge of how or when the data was fetched — the interface component manages its own lifecycle entirely.
 
-## `mounts`
+## `uses`
 
 An `interface` component uses `mounts` to activate adapters or providers that supply its internal data. This is how it loads what it needs to populate its `state` and serve through its methods:
 
@@ -146,7 +146,7 @@ interface ProductDetails "Loads and exposes full product details" (
         reviews(list(ProductReview)) is []
         relatedProducts(list(Product)) is []
     )
-    mounts (
+    uses (
         adapter ProductsModule.ProductsAdapter.loadReviews productId is props.id, onLoad callback is (
             state.reviews
         ),

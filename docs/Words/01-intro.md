@@ -36,13 +36,13 @@ The second layer covers **components** — constructs that sit closer to impleme
 
 | Construct | What it represents |
 |---|---|
-| `screen` | The top-level UI unit mounted by a state; has direct access to state data |
+| `screen` | The top-level UI unit used by a state; has direct access to state data |
 | `view` | A reusable rendering unit; receives everything it needs via props |
 | `provider` | Computes and exposes in-memory data — normalized models, filtered collections, or registries — originating from within the system, not from external sources |
 | `adapter` | Bridges the system to external services, APIs, or hardware; the only construct permitted to perform I/O |
 | `interface` | Descriptors for components that don't fit the other constructs — models, helpers, and any other named, typed contract |
 
-These constructs compose in a strict hierarchy. A system declares its modules. A module owns its processes and states. A state mounts components. This structure is not enforced by a type system — it is enforced by the language itself. There is no valid way to write a WORDS specification that violates these relationships.
+These constructs compose in a strict hierarchy. A system declares its modules. A module owns its processes and states. A state uses components. This structure is not enforced by a type system — it is enforced by the language itself. There is no valid way to write a WORDS specification that violates these relationships.
 
 ## What the Syntax Looks Like
 
@@ -94,7 +94,7 @@ Constructs that belong to a module are written in their own files and carry a `m
 module AuthModule
 state Unauthenticated receives ?AuthError (
     returns AccountCredentials
-    mounts screen LoginScreen
+    uses screen LoginScreen
 )
 ```
 
@@ -141,7 +141,7 @@ context AccountCredentials (
 module SessionModule
 state SessionIdle receives ?SessionValidationError (
     returns StoredSession
-    mounts adapter SessionAdapter.checkSession
+    uses adapter SessionAdapter.checkSession
 )
 ```
 
@@ -179,7 +179,7 @@ The rest of this documentation covers each construct in depth, with full syntax 
 3. **Processes** — the transition maps that define behavior
 4. **States** — the conditions a module can be in
 5. **Contexts** — the data that drives transitions
-6. **Screens** — the top-level UI unit mounted by a state
+6. **Screens** — the top-level UI unit used by a state
 7. **Views** — reusable rendering units composed by screens
 8. **Providers** — in-memory data computation and exposure
 9. **Adapters** — the I/O boundary to the outside world

@@ -4,13 +4,13 @@ title: State
 
 # State
 
-A `state` represents a condition the module is currently in. It is the smallest behavioral unit in a WORDS specification — the point at which the system has settled, is waiting, and is ready to produce an output that drives the next transition. Every state declares what it expects on entry, what it can return, and what it activates while resident.
+A `state` represents a condition the module is currently in. It is the smallest behavioral unit in a WORDS specification — the point at which the system has settled, is waiting, and is ready to produce an output that drives the next transition. Every state declares what it expects on entry, what it can return, and what it uses while resident.
 
 ## Purpose
 
-A state is a stable condition — the system has arrived here, something is mounted or in progress, and the state will hold until it produces an output. That output is a context. The context is what the process uses to decide where to go next.
+A state is a stable condition — the system has arrived here, something is used or in progress, and the state will hold until it produces an output. That output is a context. The context is what the process uses to decide where to go next.
 
-This framing determines what belongs in a state and what does not. A state does not contain branching logic, control flow, or conditional behavior across states. It contains a declaration of what it receives, what it can return, and what it mounts.
+This framing determines what belongs in a state and what does not. A state does not contain branching logic, control flow, or conditional behavior across states. It contains a declaration of what it receives, what it can return, and what it uses.
 
 ## Syntax
 
@@ -20,7 +20,7 @@ The `state` keyword is followed by a name recommended in PascalCase, an optional
 module AuthModule
 state Unauthenticated receives ?AuthError (
     returns AccountCredentials
-    mounts screen LoginScreen
+    uses screen LoginScreen
 )
 ```
 
@@ -30,7 +30,7 @@ The `receives` clause names the context the state expects on entry. A `?` prefix
 
 The `returns` block lists every context the state can produce. A process `when` rule exists for each — if a context appears in `returns` but has no corresponding `when` rule in any process, the specification is incomplete and the parser will reject it. The same applies to states — if a state is defined but never referenced in any process, the parser will reject it.
 
-The `mounts` block declares what the state activates while resident — a screen, a view, an adapter, or a combination. What is mounted depends on whether the state is presenting UI, triggering background work, or both.
+The `uses` block declares what the state uses while resident — a screen, a view, an adapter, or a combination. What is used depends on whether the state is presenting UI, triggering background work, or both.
 
 ## `receives`
 
@@ -40,7 +40,7 @@ The `mounts` block declares what the state activates while resident — a screen
 module AuthModule
 state StartAuthenticating receives AccountCredentials (
     returns AuthError, SystemUser
-    mounts screen UIModule.LoadingScreen
+    uses screen UIModule.LoadingScreen
 )
 ```
 
@@ -52,7 +52,7 @@ A state that can be entered from more than one origin — including cold, with n
 module AuthModule
 state Unauthenticated receives ?AuthError (
     returns AccountCredentials
-    mounts screen LoginScreen
+    uses screen LoginScreen
 )
 ```
 
@@ -68,7 +68,7 @@ A state that receives no context at all omits the `receives` clause entirely.
 module AuthModule
 state StartAuthenticating receives AccountCredentials (
     returns AuthError, SystemUser
-    mounts (
+    uses (
         screen UIModule.LoadingScreen,
         adapter AuthAdapter.login credentials is AccountCredentials
     )
@@ -92,21 +92,21 @@ state SessionValidating receives StoredSession (
             system.dropContext name is SessionToken
         )
     )
-    mounts adapter SessionAdapter.validateSession existing is StoredSession
+    uses adapter SessionAdapter.validateSession existing is StoredSession
 )
 ```
 
 The side effect executes before the context is returned — it has priority over the state's return. Only once the side effect has completed does the module transition. `system.dropContext` clears the stored context. This is not the only mechanism through which a context crosses module boundaries — a component exposed through a module's interface can also give access to contexts.
 
-## `mounts`
+## `uses`
 
-`mounts` declares what the state activates while resident. A state mounting a screen looks like this:
+`uses` declares what the state uses while resident. A state mounting a screen looks like this:
 
 ```wds title="AuthModule/states/Unauthenticated.wds"
 module AuthModule
 state Unauthenticated receives ?AuthError (
     returns AccountCredentials
-    mounts screen LoginScreen
+    uses screen LoginScreen
 )
 ```
 
@@ -116,16 +116,16 @@ A state that needs to trigger background work rather than render UI mounts an ad
 module SessionModule
 state SessionIdle receives ?SessionValidationError (
     returns StoredSession
-    mounts adapter SessionAdapter.checkSession
+    uses adapter SessionAdapter.checkSession
 )
 ```
 
-A state can mount more than one thing. When multiple mounts are needed, they are listed in a parenthesis block and separated by comma:
+A state can use more than one thing. When multiple entries are needed, they are listed in a parenthesis block and separated by comma:
 
 ```wds title="AuthModule/states/Authenticated.wds"
 module AuthModule
 state Authenticated receives SystemUser (
-    mounts (
+    uses (
         system.setContext name is SystemUser, value is state.context,
         system.RoutingModule.dispatch path is "/home"
     )
@@ -134,7 +134,7 @@ state Authenticated receives SystemUser (
 
 `state.context` gives the mounted components direct access to the context the state received on entry. How components are `mounted` and how they consume the `state.context` depends on the target framework or implementation.
 
-A state with no `mounts` is valid — it may be a transient condition that exists purely to hold a position in the process map while something external resolves.
+A state with no `uses` is valid — it may be a transient condition that exists purely to hold a position in the process map while something external resolves.
 
 ## Inline Context Construction
 
@@ -185,7 +185,7 @@ A state that mounts a screen and can receive an optional error from a previous t
 module AuthModule
 state Unauthenticated receives ?AuthError (
     returns AccountCredentials
-    mounts screen LoginScreen
+    uses screen LoginScreen
 )
 ```
 
@@ -195,7 +195,7 @@ A state that requires a context on entry, mounts a loading screen, and can produ
 module AuthModule
 state StartAuthenticating receives AccountCredentials (
     returns AuthError, SystemUser
-    mounts screen UIModule.LoadingScreen
+    uses screen UIModule.LoadingScreen
 )
 ```
 
@@ -205,7 +205,7 @@ A state that mounts an adapter to perform background work and produces a single 
 module SessionModule
 state SessionIdle receives ?SessionValidationError (
     returns StoredSession
-    mounts adapter SessionAdapter.checkSession
+    uses adapter SessionAdapter.checkSession
 )
 ```
 
@@ -222,7 +222,7 @@ state SessionValidating receives StoredSession (
             system.dropContext name is SessionToken
         )
     )
-    mounts adapter SessionAdapter.validateSession existing is StoredSession
+    uses adapter SessionAdapter.validateSession existing is StoredSession
 )
 ```
 
@@ -230,6 +230,6 @@ state SessionValidating receives StoredSession (
 
 A state belongs to a `module` and is referenced by name in that module's `process` blocks. Every context named in `returns` must appear as the `returns` side of a `when` rule in at least one process. Every context named in `receives` must be defined as a standalone `context` construct in the module's directory.
 
-A state mounts components — `screen`, `adapter`, or both. Those components are defined as standalone constructs in the module's directory, or referenced from another module by their qualified name. The state activates them; it does not define them.
+A state uses components — `screen`, `adapter`, or both. Those components are defined as standalone constructs in the module's directory, or referenced from another module by their qualified name. The state uses them; it does not define them.
 
 A state does not define transitions. Transitions are the responsibility of the `process`. A state only declares what it is ready to produce — the process decides what that production means for the module's next condition.
