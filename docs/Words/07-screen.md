@@ -83,7 +83,7 @@ screen LoginScreen (
 
 The same screen renders differently depending on how the state was entered — with a warning if the user was deauthenticated, with a success message if they just recovered their account, and with neither if they arrive cold. The state machine determines the condition; the screen responds to it.
 
-For the full conditional and iteration syntax, see [Components](/words/docs/components).
+For the full conditional and iteration syntax, see [Components](/words/docs/Words/components).
 
 ## Examples
 
