@@ -202,10 +202,10 @@ A `screen` is always the root of a UI component tree. A `view` must always have 
 Data moves through a component tree in one direction:
 
 - **Down** — via `props`, from parent to child
-- **Up** — via `props` handlers or `events`, from child to parent
-- **Local** — via component-level `state`, owned by the component itself
+- **Up** — via `props` callbacks, from child to parent
+- **Local** — via `state`, owned by the component itself
 
-A `screen` is the entry point for state data. It reads from `state.context` and passes what each child needs via props. Views never read `state.context` directly — they receive everything they need from their parent.
+Every component can declare a `state` block for instance-level data it owns and manages internally — input values in a view, cached collections in a provider, runtime flags in an adapter. This data does not flow outward. It is the component's own concern.
 
 ```wds title="UIModule/screens/OrderScreen.wds"
 module UIModule
