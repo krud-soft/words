@@ -1,6 +1,5 @@
 ---
 title: Overview
-sidebar_position: 1
 ---
 
 # Overview
@@ -41,7 +40,7 @@ The second layer covers **components** — constructs that sit closer to impleme
 | `view` | A reusable rendering unit; receives everything it needs via props |
 | `provider` | Computes and exposes in-memory data — normalized models, filtered collections, or registries — originating from within the system, not from external sources |
 | `adapter` | Bridges the system to external services, APIs, or hardware; the only construct permitted to perform I/O |
-| `interface` | Defines the shape of components exposed by modules |
+| `interface` | Descriptors for components that don't fit the other constructs — models, helpers, and any other named, typed contract |
 
 These constructs compose in a strict hierarchy. A system declares its modules. A module owns its processes and states. A state mounts components. This structure is not enforced by a type system — it is enforced by the language itself. There is no valid way to write a WORDS specification that violates these relationships.
 
@@ -146,7 +145,28 @@ state SessionIdle receives ?SessionValidationError (
 )
 ```
 
-WORDS uses a consistent typing structure across all constructs: a name followed by its type in parentheses, such as `user(string)`, `expiresAt(number)`, or `returns(Module)`. A `?` prefix marks something as optional. A block or expression preceded by `if` becomes a conditional evaluation. The `is` keyword assigns a value to a parameter, such as `path is "/home"` or `handler is ProductsModule`, and checks for a value when used after the `if` keyword, such as `if path is "/home"` or `if path is not "/home"`.
+WORDS uses a consistent typing structure across all constructs: a name followed by its type in parentheses, such as `user(string)` or `expiresAt(integer)`.
+
+### Types
+
+| Type | Description | Default |
+|---|---|---|
+| `string` | Text value | `is ""` |
+| `integer` | Whole number | `is 0` |
+| `float` | Decimal number | `is 0.0` |
+| `boolean` | True or false | `is false` |
+| `list(Type)` | Ordered collection | `is []` |
+| `map(KeyType, ValueType)` | Key-value pairs | `is {}` |
+
+A named `interface` component acts as a custom type anywhere a type is expected — `list(Product)`, `map(string, OrderSummary)`, and so on.
+
+A `?` prefix marks a value as optional — `?Product` means the value may or may not be present. Optional values do not need a default.
+
+Default values are declared with `is` — `total(float) is 0.0`, `items(list(Product)) is []`, `active(boolean) is false`.
+
+### Keywords
+
+The `is` keyword assigns a value to a parameter — `path is "/home"` or `handler is ProductsModule`. When used after `if`, it becomes a comparison — `if path is "/home"` or `if path is not "/home"`. A block or expression preceded by `if` is a conditional evaluation.
 
 WORDS specifications are written in `.wds` files, organised under a root directory. Each module has its own folder named after it, with subdirectories for each construct type — `states`, `processes`, `contexts`, `screens`, `views`, `providers`, `adapters`, and `interfaces`. The `system` declaration lives at the root of the directory. This structure mirrors the language hierarchy directly, making any WORDS project navigable without prior knowledge of the codebase.
 
@@ -163,6 +183,6 @@ The rest of this documentation covers each construct in depth, with full syntax 
 7. **Views** — reusable rendering units composed by screens
 8. **Providers** — in-memory data computation and exposure
 9. **Adapters** — the I/O boundary to the outside world
-10. **Interfaces** — descriptors for components that don't fit the other constructors (models, helpers etc.) 
+10. **Interfaces** — the shape of what modules expose
 
 By now, you should have the mental model. The sections ahead fill in the details.

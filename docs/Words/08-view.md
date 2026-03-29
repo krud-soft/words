@@ -1,6 +1,5 @@
 ---
 title: View
-sidebar_position: 8
 ---
 
 # View
