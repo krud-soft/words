@@ -15,7 +15,7 @@ Every system, at some level of abstraction, can be described as a machine that m
 
 WORDS makes this structure explicit and consistent across the entire system. A `system` names the top-level product and declares which modules compose it. A module groups a functionality. A process maps out its transitions. A state represents one condition in that process. A context is the data that travels between states. Components — screens, views, providers, adapters, interfaces — are the pieces closest to implementation that interact with the world and with each other.
 
-Nothing in a WORDS specification is implicit. If a state can produce two different outputs, both are declared. If a module needs to react to an event in another module, that contract is written down. If a component performs a network call, it is an adapter — the only construct in the language permitted to do so.
+Nothing in a WORDS specification is implicit. If a state can produce two different outputs, both are declared. If a module needs to react to an event in another module, that contract is written down. If a component interacts with the external medium - like making a request, reading a sensor value etc. - it is an adapter — the only construct in the language permitted to do so.
 
 This explicitness is what makes WORDS useful for both humans and models. An engineer can read a WORDS file and understand exactly what the system does in a given condition. A language model can read the same file and generate a correct implementation without guessing.
 
@@ -40,7 +40,7 @@ The second layer covers **components** — constructs that sit closer to impleme
 | `screen` | The top-level UI unit mounted by a state; has direct access to state data |
 | `view` | A reusable rendering unit; receives everything it needs via props |
 | `provider` | Computes and exposes in-memory data — normalized models, filtered collections, or registries — originating from within the system, not from external sources |
-| `adapter` | Bridges the system to external services, APIs, or hardware; the only construct permitted to perform async I/O |
+| `adapter` | Bridges the system to external services, APIs, or hardware; the only construct permitted to perform I/O |
 | `interface` | Defines the shape of components exposed by modules |
 
 These constructs compose in a strict hierarchy. A system declares its modules. A module owns its processes and states. A state mounts components. This structure is not enforced by a type system — it is enforced by the language itself. There is no valid way to write a WORDS specification that violates these relationships.
@@ -106,10 +106,11 @@ A module's API can take two forms. The first exposes access to runtime component
 
 Context sharing across module boundaries is handled by `system` directly. A module can persist a context using `system.setContext()`, making it available to any other module that retrieves it using `system.getContext()`. This is the only mechanism through which contexts cross module boundaries.
 
-The routing system illustrates the subscription mechanism: `RoutingModule` dispatches URL changes, and each feature module implements the handler interface, registers its own paths, and owns its own transitions entirely.
+The routing example illustrates the subscription mechanism: `RoutingModule` dispatches URL changes, and each module implements the handler interface, registers its own paths, and owns its own transitions entirely.
+
 ```wds title="ProductsModule/ProductsModule.wds"
 module ProductsModule (
-
+    // processes listing omitted
     implements RoutingModule.RouteSwitchHandler (
         switch path(string) (
             if path is "/products"

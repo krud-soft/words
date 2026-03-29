@@ -95,7 +95,7 @@ The following example shows a products module subscribing to `RoutingModule` —
 
 ```wds title="ProductsModule/ProductsModule.wds"
 module ProductsModule (
-
+    // processes listing omitted
     implements RoutingModule.RouteSwitchHandler (
         switch path(string) (
             if path is "/products"
@@ -138,10 +138,10 @@ module LoggingModule "Provides a structured logging interface for other modules"
 )
 ```
 
-A stateful module subscribing to an external event:
+Example of a catalog module subscribing to a routing module with its own path:
 ```wds title="CatalogueModule/CatalogueModule.wds"
 module CatalogueModule "Manages product browsing and search" (
-
+    // processes listing omitted
     implements RoutingModule.RouteSwitchHandler (
         switch path(string) (
             if path is "/catalogue"
