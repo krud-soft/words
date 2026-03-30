@@ -131,8 +131,8 @@ A stateless module exposing a shared interface:
 ```wds title="LoggingModule/LoggingModule.wds"
 module LoggingModule "Provides a structured logging interface for other modules" (
     interface LogEntry (
-        level(string)
-        message(string)
+        level(string),
+        message(string),
         timestamp(string)
     )
 )

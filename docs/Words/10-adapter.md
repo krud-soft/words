@@ -20,7 +20,7 @@ The `adapter` keyword is followed by a name in PascalCase, an optional descripti
 module AuthModule
 adapter AuthAdapter "Connects to the authentication service" (
     props (
-        baseUrl(string)
+        baseUrl(string),
         timeoutMs(integer) is 5000
     )
     interface (
@@ -44,8 +44,8 @@ The `module` declaration on the line above is the ownership declaration — it b
 module SessionModule
 adapter SessionAdapter "Connects to external systems for synchronising the session" (
     props (
-        baseUrl(string)
-        timeoutMs(integer) is 5000
+        baseUrl(string),
+        timeoutMs(integer) is 5000,
         retryAttempts(integer) is 3
     )
     interface (
@@ -69,11 +69,11 @@ Props on an adapter are configuration, not runtime data. They are set once when 
 module CatalogueModule
 adapter CatalogueAdapter "Connects to the product catalogue service" (
     props (
-        baseUrl(string)
+        baseUrl(string),
         apiKey(string)
     )
     state (
-        lastFetchedAt(?integer)
+        lastFetchedAt(?integer),
         cachedEtag(?string)
     )
     interface (
@@ -93,7 +93,7 @@ adapter CatalogueAdapter "Connects to the product catalogue service" (
 module OrdersModule
 adapter OrdersAdapter "Connects to the orders service" (
     props (
-        baseUrl(string)
+        baseUrl(string),
         timeoutMs(integer) is 8000
     )
     interface (
@@ -125,17 +125,20 @@ A notifications adapter with state for tracking delivery status:
 module NotificationsModule
 adapter NotificationsAdapter "Connects to the push notification service" (
     props (
-        serviceUrl(string)
+        serviceUrl(string),
         apiKey(string)
     )
     state (
-        deviceToken(?string)
+        deviceToken(?string),
         isRegistered(boolean) is false
     )
     interface (
-        register deviceId(string) returns(string) "Registers the device and returns a push token"
-        send notification(Notification) returns(boolean) "Sends a push notification; returns true on success"
-        unregister "Removes the device registration"
+        register deviceId(string) returns(string)
+            "Registers the device and returns a push token"
+        send notification(Notification) returns(boolean)
+            "Sends a push notification; returns true on success"
+        unregister
+            "Removes the device registration"
     )
 )
 ```

@@ -22,12 +22,12 @@ The `view` keyword is followed by a name in PascalCase, an optional description 
 module AuthModule
 view LoginFormSection "Renders the login form and surfaces submission interactions" (
     props (
-        error(AuthError)
-        onSubmit(AccountCredentials)
+        error(AuthError),
+        onSubmit(AccountCredentials),
         onForgotPassword(RecoverAccount)
     )
     state (
-        inputEmail(string) is ""
+        inputEmail(string) is "",
         inputPassword(string) is ""
     )
 )
@@ -47,8 +47,8 @@ A view's data contract is defined across two blocks. Each covers a distinct conc
 module UIModule
 view NotificationBanner "Displays a contextual message to the user" (
     props (
-        type(string)
-        message(string)
+        type(string),
+        message(string),
         onDismiss(NotificationDismissed)
     )
 )
@@ -67,8 +67,8 @@ view LoginFormSection (
         onSubmit(AccountCredentials)
     )
     state (
-        inputEmail(string) is ""
-        inputPassword(string) is ""
+        inputEmail(string) is "",
+        inputPassword(string) is "",
         isSubmitting(boolean) is false
     )
 )
@@ -78,15 +78,16 @@ Local state is for concerns that belong entirely to the view — input values, t
 
 ## Nesting
 
-A view can use other views inside its own `uses` block, composing larger UI units from smaller ones:
+A view can use other views inside its own `uses` block, composing larger UI units from smaller ones. In this example, `OrderSummary` is a view that threads its own props down to three child views, and forwards interaction callbacks back up to its parent:
 
-```wds title="UIModule/views/OrderSummary.wds"
-module UIModule
+```wds title="CatalogModule/views/OrderSummary.wds"
+module CatalogModule
 view OrderSummary "Renders a summary of the current order" (
     props (
-        items(list(OrderItem))
-        total(float)
-        onConfirm(OrderConfirmed)
+        orderId(integer),
+        items(list(OrderItem)),
+        total(float),
+        onConfirm(OrderConfirmed),
         onCancel(OrderCancelled)
     )
     uses (
@@ -95,9 +96,29 @@ view OrderSummary "Renders a summary of the current order" (
         view UIModule.OrderTotal total is props.total,
 
         view UIModule.OrderActions (
-            onConfirm is props.onConfirm,
-            onCancel is props.onCancel
+            onConfirm is (
+                props.onConfirm(orderId is props.orderId)
+            ),
+            onCancel is (
+                props.onCancel(orderId is props.orderId)
+            )
         )
+    )
+)
+```
+
+`OrderActions` declares its callbacks as typed props, which is what allows the parent to pass handlers through and what the parser uses to infer the argument names available inside each handler body:
+
+```wds title="UIModule/views/OrderActions.wds"
+module UIModule
+view OrderActions "Renders the confirm and cancel controls for an order" (
+    props (
+        onConfirm(OrderConfirmed),
+        onCancel(OrderCancelled)
+    )
+    uses (
+        view UIModule.PrimaryButton onClick is props.onConfirm,
+        view UIModule.SecondaryButton onClick is props.onCancel
     )
 )
 ```
@@ -112,7 +133,7 @@ A simple presentational view with no interactions:
 module UIModule
 view UserGreeting "Displays a personalised greeting for the current user" (
     props (
-        fullName(string)
+        fullName(string),
         lastLoginAt(string)
     )
 )
@@ -124,12 +145,12 @@ A form view with local input state and a submission callback:
 module AuthModule
 view LoginFormSection "Renders the login form and surfaces submission interactions" (
     props (
-        error(AuthError)
-        onSubmit(AccountCredentials)
+        error(AuthError),
+        onSubmit(AccountCredentials),
         onForgotPassword(RecoverAccount)
     )
     state (
-        inputEmail(string) is ""
+        inputEmail(string) is "",
         inputPassword(string) is ""
     )
 )
@@ -141,9 +162,9 @@ A reusable card view with interaction callbacks declared in props:
 module UIModule
 view NotificationCard "Displays a single notification with dismiss and action controls" (
     props (
-        message(string)
-        type(string)
-        onDismiss(NotificationDismissed)
+        message(string),
+        type(string),
+        onDismiss(NotificationDismissed),
         onAction(NotificationActioned)
     )
 )
@@ -165,6 +186,8 @@ Each view lives in its own file under the `views` directory of its owning module
     views/
       NotificationBanner.wds
       NotificationCard.wds
+  CatalogModule/
+    views/
       OrderSummary.wds
 ```
 

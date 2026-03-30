@@ -23,7 +23,7 @@ provider ProductsProvider "Supplies product data to the products UI" (
         productsAdapter(ProductsAdapter)
     )
     state (
-        products(list(Product)) is []
+        products(list(Product)) is [],
         selectedProduct(?Product)
     )
     interface (
@@ -47,7 +47,7 @@ The `module` declaration on the line above is the ownership declaration — it b
 module SessionModule
 provider SessionProvider "Manages the active session and exposes user data" (
     props (
-        sessionAdapter(SessionAdapter)
+        sessionAdapter(SessionAdapter),
         userModel(UserModel)
     )
     interface (
@@ -72,8 +72,8 @@ provider CatalogueProvider "Manages the product catalogue and search results" (
         catalogueAdapter(CatalogueAdapter)
     )
     state (
-        catalogue(list(CatalogueItem)) is []
-        searchResults(list(CatalogueItem)) is []
+        catalogue(list(CatalogueItem)) is [],
+        searchResults(list(CatalogueItem)) is [],
         activeFilter(?CatalogueFilter)
     )
     interface (
@@ -91,7 +91,7 @@ provider CatalogueProvider "Manages the product catalogue and search results" (
 
 ## `interface`
 
-`interface` declares the methods the provider exposes to other components. Each method is named, lists its parameters if any, and declares its return type if it produces one. Return types can be any any `interface`, primitives or lists or collections:
+`interface` declares the methods the provider exposes to other components. Each method is named, lists its parameters if any, and declares its return type if it produces one. Return types can be any `interface`, primitives or lists or collections:
 
 ```wds title="CartModule/providers/CartProvider.wds"
 module CartModule
@@ -100,15 +100,20 @@ provider CartProvider "Manages the shopping cart contents and totals" (
         cartAdapter(CartAdapter)
     )
     state (
-        items(list(CartItem)) is []
+        items(list(CartItem)) is [],
         total(float) is 0
     )
     interface (
-        getItems returns(list(CartItem)) "Returns all items currently in the cart"
-        getTotal returns(float) "Returns the current cart total"
-        addItem item(CartItem) "Adds an item to the cart"
-        removeItem item(CartItem) "Removes an item from the cart"
-        clear "Empties the cart"
+        getItems returns(list(CartItem))
+            "Returns all items currently in the cart"
+        getTotal returns(float)
+            "Returns the current cart total"
+        addItem item(CartItem)
+            "Adds an item to the cart"
+        removeItem item(CartItem)
+            "Removes an item from the cart"
+        clear
+            "Empties the cart"
     )
 )
 ```
@@ -126,7 +131,7 @@ provider OrdersProvider "Supplies order history and order detail to the orders U
         ordersAdapter(OrdersAdapter)
     )
     state (
-        orders(list(OrderSummary)) is []
+        orders(list(OrderSummary)) is [],
         activeOrder(?OrderDetail)
     )
     interface (
@@ -146,11 +151,11 @@ A provider that aggregates data from multiple adapters:
 module DashboardModule
 provider DashboardProvider "Aggregates data from multiple sources for the dashboard" (
     props (
-        analyticsAdapter(AnalyticsAdapter)
+        analyticsAdapter(AnalyticsAdapter),
         notificationsAdapter(NotificationsAdapter)
     )
     state (
-        metrics(?DashboardMetrics)
+        metrics(?DashboardMetrics),
         notifications(list(Notification)) is []
     )
     interface (

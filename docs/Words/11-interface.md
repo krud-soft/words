@@ -22,10 +22,10 @@ The `interface` keyword is followed by a name in PascalCase, an optional descrip
 module ProductsModule
 interface Product "Represents a single product in the catalogue" (
     props (
-        id(string)
-        name(string)
-        price(float)
-        description(string)
+        id(string),
+        name(string),
+        price(float),
+        description(string),
         imageUrl(string)
     )
 )
@@ -41,10 +41,10 @@ The `module` declaration on the line above is the ownership declaration — it b
 module ProductsModule
 interface Product "Represents a single product in the catalogue" (
     props (
-        id(string)
-        name(string)
-        price(float)
-        description(string)
+        id(string),
+        name(string),
+        price(float),
+        description(string),
         imageUrl(string)
     )
 )
@@ -56,10 +56,10 @@ A component that receives a `Product` can access its fields directly — `produc
 module CartModule
 interface CartItem "Represents a single item in the shopping cart" (
     props (
-        productId(string)
-        name(string)
-        quantity(integer)
-        unitPrice(float)
+        productId(string),
+        name(string),
+        quantity(integer),
+        unitPrice(float),
         totalPrice(float)
     )
 )
@@ -69,9 +69,9 @@ interface CartItem "Represents a single item in the shopping cart" (
 module CatalogueModule
 interface CatalogueFilter "Defines the shape of a filter applied to the catalogue" (
     props (
-        category(?string)
-        minPrice(?float)
-        maxPrice(?float)
+        category(?string),
+        minPrice(?float),
+        maxPrice(?float),
         inStockOnly(boolean) is false
     )
 )
@@ -106,13 +106,13 @@ A method that produces no output omits `returns`. A method that takes no paramet
 module OrdersModule
 interface OrderDetail "Represents a fully detailed order" (
     props (
-        id(string)
-        placedAt(integer)
-        status(string)
+        id(string),
+        placedAt(integer),
+        status(string),
         total(float)
     )
     state (
-        items(list(OrderItem)) is []
+        items(list(OrderItem)) is [],
         shippingAddress(?ShippingAddress)
     )
     uses (
@@ -144,7 +144,7 @@ onLoad is (
 )
 ```
 
-- `<n>` — the identifier inferred from the adapter method’s return type, available inside the callback body
+- `<name>` — the identifier inferred from the adapter method's return type, available inside the callback body
 - `state.<field>` — the state field to write into
 - `is` — the assignment operator, consistent with the rest of the language
 
@@ -157,7 +157,7 @@ interface ProductDetails "Loads and exposes full product details" (
         id(string)
     )
     state (
-        reviews(list(ProductReview)) is []
+        reviews(list(ProductReview)) is [],
         relatedProducts(list(Product)) is []
     )
     uses (
@@ -221,8 +221,8 @@ A data model whose fields are accessed via dot notation:
 module SessionModule
 interface AuthSession "Represents an active session token" (
     props (
-        token(string)
-        expiresAt(integer)
+        token(string),
+        expiresAt(integer),
         userId(string)
     )
 )
@@ -234,7 +234,7 @@ A typed error contract:
 module AuthModule
 interface AuthenticationError "Represents an authentication failure" (
     props (
-        code(string)
+        code(string),
         reason(string)
     )
 )
@@ -246,8 +246,8 @@ A callable contract that exposes behavior through methods:
 module SharedModule
 interface Pagination "A callable pagination contract" (
     props (
-        page(integer) is 0
-        pageSize(integer) is 20
+        page(integer) is 0,
+        pageSize(integer) is 20,
         total(integer)
     )
     nextPage

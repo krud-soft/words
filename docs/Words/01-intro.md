@@ -133,7 +133,7 @@ Every context is explicitly declared with named properties and their types defin
 ```wds title="AuthModule/contexts/AccountCredentials.wds"
 module AuthModule
 context AccountCredentials (
-    user(string)
+    user(string),
     password(string)
 )
 ```
@@ -169,6 +169,10 @@ Default values are declared with `is` — `total(float) is 0.0`, `items(list(Pro
 The `is` keyword assigns a value to a parameter — `path is "/home"` or `handler is ProductsModule`. When used after `if`, it becomes a comparison — `if path is "/home"` or `if path is not "/home"`. A block or expression preceded by `if` is a conditional evaluation.
 
 WORDS specifications are written in `.wds` files, organised under a root directory. Each module has its own folder named after it, with subdirectories for each construct type — `states`, `processes`, `contexts`, `screens`, `views`, `providers`, `adapters`, and `interfaces`. The `system` declaration lives at the root of the directory. This structure mirrors the language hierarchy directly, making any WORDS project navigable without prior knowledge of the codebase.
+
+### Inference
+
+@todo to be implemented
 
 ### Iteration
 
