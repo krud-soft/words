@@ -23,8 +23,8 @@ module AuthModule
 view LoginFormSection "Renders the login form and surfaces submission interactions" (
     props (
         error(AuthError),
-        onSubmit(AccountCredentials),
-        onForgotPassword(RecoverAccount)
+        onSubmit credentials(AccountCredentials),
+        onForgotPassword details(RecoverAccount)
     )
     state (
         inputEmail(string) is "",
@@ -49,7 +49,7 @@ view NotificationBanner "Displays a contextual message to the user" (
     props (
         type(string),
         message(string),
-        onDismiss(NotificationDismissed)
+        onDismiss notification(NotificationDismissed)
     )
 )
 ```
@@ -64,7 +64,7 @@ A screen passes the module's state data and callbacks through props. A view pass
 module AuthModule
 view LoginFormSection (
     props (
-        onSubmit(AccountCredentials)
+        onSubmit credentials(AccountCredentials)
     )
     state (
         inputEmail(string) is "",
@@ -87,20 +87,22 @@ view OrderSummary "Renders a summary of the current order" (
         orderId(integer),
         items(list(OrderItem)),
         total(float),
-        onConfirm(OrderConfirmed),
-        onCancel(OrderCancelled)
+        onConfirm confirmDetails(OrderConfirmed),
+        onCancel cancelDetails(OrderCancelled)
     )
     uses (
         view UIModule.OrderItemList items is props.items,
-
         view UIModule.OrderTotal total is props.total,
-
         view UIModule.OrderActions (
-            onConfirm is (
-                props.onConfirm(orderId is props.orderId)
+            // shapes the arguments to type of confirmDetails, OrderConfirmed
+            onConfirm is props.onConfirm(
+                orderId is props.orderId, 
+                action is "Confirmed"
             ),
-            onCancel is (
-                props.onCancel(orderId is props.orderId)
+            // shapes the arguments to type of cancelDetails, OrderCancelled
+            onCancel is props.onConfirm(
+                orderId is props.orderId,
+                action is "Canceled"
             )
         )
     )
@@ -113,8 +115,9 @@ view OrderSummary "Renders a summary of the current order" (
 module UIModule
 view OrderActions "Renders the confirm and cancel controls for an order" (
     props (
-        onConfirm(OrderConfirmed),
-        onCancel(OrderCancelled)
+        // not type for props means these are callback functions with no arguments
+        onConfirm,
+        onCancel
     )
     uses (
         view UIModule.PrimaryButton onClick is props.onConfirm,
@@ -146,8 +149,8 @@ module AuthModule
 view LoginFormSection "Renders the login form and surfaces submission interactions" (
     props (
         error(AuthError),
-        onSubmit(AccountCredentials),
-        onForgotPassword(RecoverAccount)
+        onSubmit credentials(AccountCredentials),
+        onForgotPassword accountDetails(RecoverAccount)
     )
     state (
         inputEmail(string) is "",
@@ -164,8 +167,8 @@ view NotificationCard "Displays a single notification with dismiss and action co
     props (
         message(string),
         type(string),
-        onDismiss(NotificationDismissed),
-        onAction(NotificationActioned)
+        onDismiss notification(NotificationDismissed),
+        onAction notification(NotificationActioned)
     )
 )
 ```

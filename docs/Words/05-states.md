@@ -207,6 +207,43 @@ state SessionValidating receives StoredSession (
 )
 ```
 
+An example in which the state mounts a screen and changes its output based on the interaction with a confirmation and a cancellation buttons:
+
+```wds
+
+module CatalogModule
+state OrderDiplaying receives OrderContext (
+    // can return order confirmation and cancel order contexts
+    returns ConfirmOrderCtx, CancelOrderCtx
+    
+    // mounting the order summary UI
+    uses screen OrderSummaryScreen
+)
+
+```
+
+```wds title="CatalogModule/screens/OrderSummaryScreen.wds"
+module CatalogModule
+screen OrderSummaryScreen "Shows the order summary screen" (
+    uses (
+        view AppUIModule.NavigationBar (
+            currentUser is system.getContext(SystemUser)
+        ),
+        view OrderSummary (
+            orderId state.context.id,
+            items is [],
+            total is state.context.total,
+            onConfirm is (
+                state.return(confirmDetails)
+            ),
+            onCancel is (
+                state.return(cancelDetails)
+            ),
+        )
+    )
+)
+```
+
 ## Relationship to Other Constructs
 
 A state belongs to a `module` and is referenced by name in that module's `process` blocks. Every context named in `returns` must appear as the `returns` side of a `when` rule in at least one process. Every context named in `receives` must be defined as a standalone `context` construct in the module's directory.

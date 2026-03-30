@@ -172,7 +172,36 @@ WORDS specifications are written in `.wds` files, organised under a root directo
 
 ### Inference
 
-@todo to be implemented
+WORDS infers information from declarations so that call sites stay concise without losing precision. The primary source of inference is the callback prop declaration on a `view`.
+
+A callback prop declared with a named argument — `onSubmit credentials(AccountCredentials)` — tells the parser two things: the name of the variable that will carry the callback's payload (`credentials`), and its type (`AccountCredentials`). Both are available downstream without being restated.
+
+At the **call site**, the argument name is inferred directly from the prop declaration. A screen wiring up `onSubmit` writes:
+
+```wds
+view UIModule.LoginForm (
+    onSubmit is (
+        state.return(credentials)
+    )
+)
+```
+
+The parser knows `credentials` is of type `AccountCredentials` because `LoginForm` declared it that way. The screen does not restate the type — it uses the name the view established.
+
+When a view forwards a callback to a child, it can shape the arguments inline. The prop declaration on the child tells the parser what argument names are available inside the shaping block:
+
+```wds
+view UIModule.OrderActions (
+    onConfirm is props.onConfirm(
+        orderId is props.orderId,
+        action is "Confirmed"
+    )
+)
+```
+
+Here `props.onConfirm` was declared as `onConfirm confirmDetails(OrderConfirmed)` — so the parser knows the inline block must satisfy the shape of `OrderConfirmed`, and validates the properties accordingly.
+
+A callback prop with **no argument declaration** — `onConfirm` with no name or type — signals that the callback carries no payload. The parser infers that no variable is available inside its handler body, and no argument shaping is permitted at the call site.
 
 ### Iteration
 
