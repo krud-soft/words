@@ -115,7 +115,7 @@ A method that produces no output omits the `returns` clause. A method that takes
 
 An adapter is the only construct in WORDS permitted to be async. Every other construct — providers, views, screens, states — operates synchronously within the system boundary. When a component needs data from outside the system, it does so through an adapter, and the async concern is contained there.
 
-This rule has a direct consequence for how the system is modelled. A state that needs to wait for an external response mounts an adapter directly and produces its output context only when the adapter resolves. The adapter handles the async; the state handles the transition.
+This rule has a direct consequence for how the system is modelled. A state that needs to wait for an external response uses an adapter directly and produces its output context only when the adapter resolves. The adapter handles the async; the state handles the transition.
 
 ## Examples
 
@@ -133,12 +133,9 @@ adapter NotificationsAdapter "Connects to the push notification service" (
         isRegistered(boolean) is false
     )
     interface (
-        register deviceId(string) returns(string)
-            "Registers the device and returns a push token"
-        send notification(Notification) returns(boolean)
-            "Sends a push notification; returns true on success"
-        unregister
-            "Removes the device registration"
+        register deviceId(string) returns(string) "Registers the device and returns a push token"
+        send notification(Notification) returns(boolean) "Sends a push notification; returns true on success"
+        unregister "Removes the device registration"
     )
 )
 ```

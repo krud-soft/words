@@ -87,7 +87,7 @@ A few things are worth noticing here even before reading the full syntax referen
 
 - The `when` rules in a process read almost like plain English. Each one names the current state, the context it produced, and the state to enter next — followed by a reason.
 - The quoted strings after a `when` rule are transition narratives — a human-readable explanation of why the system moves.
-- `start` names the initial state of the module.
+- `start` names the initial state of the module (if the module has a state start condition).
 
 Constructs that belong to a module are written in their own files and carry a `module` declaration on one line before their declaration:
 ```wds title="AuthModule/states/Unauthenticated.wds"

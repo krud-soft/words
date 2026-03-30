@@ -104,16 +104,11 @@ provider CartProvider "Manages the shopping cart contents and totals" (
         total(float) is 0
     )
     interface (
-        getItems returns(list(CartItem))
-            "Returns all items currently in the cart"
-        getTotal returns(float)
-            "Returns the current cart total"
-        addItem item(CartItem)
-            "Adds an item to the cart"
-        removeItem item(CartItem)
-            "Removes an item from the cart"
-        clear
-            "Empties the cart"
+        getItems returns(list(CartItem)) "Returns all items currently in the cart"
+        getTotal returns(float) "Returns the current cart total"
+        addItem item(CartItem) "Adds an item to the cart"
+        removeItem item(CartItem) "Removes an item from the cart"
+        clear "Empties the cart"
     )
 )
 ```

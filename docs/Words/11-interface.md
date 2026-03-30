@@ -6,7 +6,7 @@ title: Interface
 
 An `interface` is a contract component — a named, typed construct for anything that does not fit the role of a screen, view, provider, or adapter. It can represent a data model, a helper, a handler shape, a callable contract, or any other typed concept the system needs to name explicitly.
 
-An `interface` component is distinct from the `interface` block that appears inside a module definition. The module-level `interface` block declares a module's API — what other modules can call or implement. The `interface` component is a construct in its own right, with its own `props`, `state`, and `mounts`, that lives in the component layer alongside screens, views, providers, and adapters.
+An `interface` component is distinct from the `interface` block that appears inside a module definition. The module-level `interface` block declares a module's API — what other modules can call or implement. The `interface` component is a construct in its own right, with its own `props`, `state`, and `uses`, that lives in the component layer alongside screens, views, providers, and adapters.
 
 ## Purpose
 
@@ -116,12 +116,14 @@ interface OrderDetail "Represents a fully detailed order" (
         shippingAddress(?ShippingAddress)
     )
     uses (
-        adapter OrdersModule.OrdersAdapter.loadOrderItems orderId is props.id, onLoad callback is (
-            state.items
-        ),
-        adapter OrdersModule.OrdersAdapter.loadShippingAddress orderId is props.id, onLoad callback is (
-            state.shippingAddress
-        )
+        adapter system.OrdersModule.OrdersAdapter.loadOrderItems orderId is props.id,
+            onLoad is (
+                state.items is items
+            ),
+        adapter system.OrdersModule.OrdersAdapter.loadShippingAddress orderId is props.id,
+            onLoad is (
+                state.shippingAddress is shippingAddress
+            )
     )
     getItems returns(list(OrderItem))
         "Returns the order items once loaded"
@@ -130,11 +132,23 @@ interface OrderDetail "Represents a fully detailed order" (
 )
 ```
 
-The `onLoad` callback receives the data from the adapter and stores it in `state`. The methods `getItems` and `getShippingAddress` return it from state. The consumer calls the methods without any knowledge of how or when the data was fetched — the interface component manages its own lifecycle entirely.
+When the adapter method resolves, `onLoad` fires and receives the adapter's return value. The parameter name inside the callback body is inferred from the adapter method's return type signature. The body assigns it directly into the interface's `state` using the standard `is` keyword. The methods `getItems` and `getShippingAddress` expose that state to the outside. The consumer calls the methods without any knowledge of how or when the data was fetched — the interface component manages its own lifecycle entirely.
 
 ## `uses`
 
-An `interface` component uses `mounts` to activate adapters or providers that supply its internal data. This is how it loads what it needs to populate its `state` and serve through its methods:
+A `uses` block activates adapters or providers that supply the interface component's internal data. Each adapter call declares an `onLoad` argument whose body fires when the adapter resolves. The parameter name is inferred from the adapter method's return type signature, and the body assigns it directly into `state`:
+
+```wds
+onLoad is (
+    state.<field> is <name>
+)
+```
+
+- `<n>` — the identifier inferred from the adapter method’s return type, available inside the callback body
+- `state.<field>` — the state field to write into
+- `is` — the assignment operator, consistent with the rest of the language
+
+A full example:
 
 ```wds title="ProductsModule/interfaces/ProductDetails.wds"
 module ProductsModule
@@ -147,12 +161,14 @@ interface ProductDetails "Loads and exposes full product details" (
         relatedProducts(list(Product)) is []
     )
     uses (
-        adapter ProductsModule.ProductsAdapter.loadReviews productId is props.id, onLoad callback is (
-            state.reviews
-        ),
-        adapter ProductsModule.ProductsAdapter.loadRelated productId is props.id, onLoad callback is (
-            state.relatedProducts
-        )
+        adapter system.ProductsModule.ProductsAdapter.loadReviews productId is props.id,
+            onLoad is (
+                state.reviews is reviews
+            ),
+        adapter system.ProductsModule.ProductsAdapter.loadRelated productId is props.id,
+            onLoad is (
+                state.relatedProducts is relatedProducts
+            )
     )
     getReviews returns(list(ProductReview))
         "Returns the product reviews once loaded"
@@ -160,6 +176,8 @@ interface ProductDetails "Loads and exposes full product details" (
         "Returns the related products once loaded"
 )
 ```
+
+The parameter name inside the callback body is inferred from the adapter method's return type and is scoped to that body alone.
 
 ## Module-Level Use
 
@@ -199,9 +217,9 @@ This is the subscription pattern — a module declares the shape of the callback
 
 A data model whose fields are accessed via dot notation:
 
-```wds title="SessionModule/interfaces/SessionToken.wds"
+```wds title="SessionModule/interfaces/AuthSession.wds"
 module SessionModule
-interface SessionToken "Represents an active session token" (
+interface AuthSession "Represents an active session token" (
     props (
         token(string)
         expiresAt(integer)
@@ -212,9 +230,9 @@ interface SessionToken "Represents an active session token" (
 
 A typed error contract:
 
-```wds title="AuthModule/interfaces/AuthError.wds"
+```wds title="AuthModule/interfaces/AuthenticationError.wds"
 module AuthModule
-interface AuthError "Represents an authentication failure" (
+interface AuthenticationError "Represents an authentication failure" (
     props (
         code(string)
         reason(string)
@@ -271,6 +289,6 @@ The file is named after the interface it defines.
 
 ## Relationship to Other Constructs
 
-An `interface` component can be mounted by a `state`, a `screen`, a `view`, a `provider`, or an `adapter`. It provides the typed vocabulary — models, helpers, handler shapes, callable contracts — that all other components reference in their own `props` and method declarations.
+An `interface` component can be used by a `state`, a `screen`, a `view`, a `provider`, or an `adapter`. It provides the typed vocabulary — models, helpers, handler shapes, callable contracts — that all other components reference in their own `props` and method declarations.
 
 At the module level, `interface` is also the mechanism through which modules expose APIs and declare subscription contracts. This is a different role from the component — it is the module's boundary, not a construct that lives in the component layer — but both share the same keyword and the same principle: a named, typed shape that the rest of the system can depend on.

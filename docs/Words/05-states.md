@@ -14,7 +14,7 @@ This framing determines what belongs in a state and what does not. A state does 
 
 ## Syntax
 
-The `state` keyword is followed by a name recommended in PascalCase, an optional `receives` clause and a body in parentheses. The body declares `returns` and `mounts`:
+The `state` keyword is followed by a name recommended in PascalCase, an optional `receives` clause and a body in parentheses. The body declares `returns` and `uses`:
 
 ```wds title="AuthModule/states/Unauthenticated.wds"
 module AuthModule
@@ -30,7 +30,7 @@ The `receives` clause names the context the state expects on entry. A `?` prefix
 
 The `returns` block lists every context the state can produce. A process `when` rule exists for each — if a context appears in `returns` but has no corresponding `when` rule in any process, the specification is incomplete and the parser will reject it. The same applies to states — if a state is defined but never referenced in any process, the parser will reject it.
 
-The `uses` block declares what the state uses while resident — a screen, a view, an adapter, or a combination. What is used depends on whether the state is presenting UI, triggering background work, or both.
+The `uses` block declares what the state uses while resident — a screen, an adapter etc. or a combination. What is used depends on whether the state is presenting UI, triggering background work, or both.
 
 ## `receives`
 
@@ -44,7 +44,7 @@ state StartAuthenticating receives AccountCredentials (
 )
 ```
 
-Here `StartAuthenticating` requires `AccountCredentials` on entry — it cannot be entered without one. The credentials are available to whatever the state mounts via `state.context`.
+Here `StartAuthenticating` requires `AccountCredentials` on entry — it cannot be entered without one. The credentials are available to whatever the state uses via `state.context`.
 
 A state that can be entered from more than one origin — including cold, with no prior context — marks `receives` as optional:
 
@@ -56,7 +56,7 @@ state Unauthenticated receives ?AuthError (
 )
 ```
 
-The `?` prefix signals that `AuthError` may or may not be present. The state handles both cases. When present, the mounted screen can surface the error via `state.context`. When absent, the screen renders its default condition.
+The `?` prefix signals that `AuthError` may or may not be present. The state handles both cases. When present, the used screen can surface the error via `state.context`. When absent, the screen renders its default condition.
 
 A state that receives no context at all omits the `receives` clause entirely.
 
@@ -70,7 +70,7 @@ state StartAuthenticating receives AccountCredentials (
     returns AuthError, SystemUser
     uses (
         screen UIModule.LoadingScreen,
-        adapter AuthAdapter.login credentials is AccountCredentials
+        adapter AuthAdapter.login credentials is state.context
     )
 )
 ```
@@ -92,7 +92,7 @@ state SessionValidating receives StoredSession (
             system.dropContext name is SessionToken
         )
     )
-    uses adapter SessionAdapter.validateSession existing is StoredSession
+    uses adapter SessionAdapter.validateSession existing is state.context
 )
 ```
 
@@ -100,7 +100,7 @@ The side effect executes before the context is returned — it has priority over
 
 ## `uses`
 
-`uses` declares what the state uses while resident. A state mounting a screen looks like this:
+`uses` declares what the state uses while resident. A state using a screen looks like this:
 
 ```wds title="AuthModule/states/Unauthenticated.wds"
 module AuthModule
@@ -110,7 +110,7 @@ state Unauthenticated receives ?AuthError (
 )
 ```
 
-A state that needs to trigger background work rather than render UI mounts an adapter:
+A state that needs to trigger background work rather than render UI uses an adapter:
 
 ```wds title="SessionModule/states/SessionIdle.wds"
 module SessionModule
@@ -125,6 +125,8 @@ A state can use more than one thing. When multiple entries are needed, they are 
 ```wds title="AuthModule/states/Authenticated.wds"
 module AuthModule
 state Authenticated receives SystemUser (
+    returns LogoutContext
+
     uses (
         system.setContext name is SystemUser, value is state.context,
         system.RoutingModule.dispatch path is "/home"
@@ -132,7 +134,7 @@ state Authenticated receives SystemUser (
 )
 ```
 
-`state.context` gives the mounted components direct access to the context the state received on entry. How components are `mounted` and how they consume the `state.context` depends on the target framework or implementation.
+`state.context` gives the used components direct access to the context the state received on entry. How components are `used` and how they consume the `state.context` depends on the target framework or implementation.
 
 A state with no `uses` is valid — it may be a transient condition that exists purely to hold a position in the process map while something external resolves.
 
@@ -149,6 +151,7 @@ module AuthModule (
             enter Unauthenticated "The user's session has expired" (
                 // the AuthError context block for entering the Unauthenticated state
                 reason is "The session has expired"
+                code is "ERR:01"
             )
         )
     )
@@ -179,7 +182,7 @@ The file is named after the state it defines. The `module` declaration at the to
 
 ## Examples
 
-A state that mounts a screen and can receive an optional error from a previous transition:
+A state that uses a screen and can receive an optional error from a previous transition:
 
 ```wds title="AuthModule/states/Unauthenticated.wds"
 module AuthModule
@@ -189,7 +192,7 @@ state Unauthenticated receives ?AuthError (
 )
 ```
 
-A state that requires a context on entry, mounts a loading screen, and can produce two different outcomes:
+A state that requires a context on entry, uses a loading screen, and can produce two different outcomes:
 
 ```wds title="AuthModule/states/StartAuthenticating.wds"
 module AuthModule
@@ -199,7 +202,7 @@ state StartAuthenticating receives AccountCredentials (
 )
 ```
 
-A state that mounts an adapter to perform background work and produces a single context on completion:
+A state that uses an adapter to perform background work and produces a single context on completion:
 
 ```wds title="SessionModule/states/SessionIdle.wds"
 module SessionModule
@@ -222,7 +225,7 @@ state SessionValidating receives StoredSession (
             system.dropContext name is SessionToken
         )
     )
-    uses adapter SessionAdapter.validateSession existing is StoredSession
+    uses adapter SessionAdapter.validateSession existing is state.context
 )
 ```
 

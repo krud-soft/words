@@ -6,7 +6,7 @@ title: Components
 
 Components are the constructs closest to implementation in a WORDS specification. They are what a state uses — the things that render UI, compute data, perform I/O, and expose behavior to the rest of the system.
 
-There are five component types: `screen`, `view`, `provider`, `adapter`, and `interface`. Each has a distinct role and a defined set of rules about what it can access and what it can do. What they share is a common syntax for mounting, composing, and passing data — described on this page before the individual construct references.
+There are five component types: `screen`, `view`, `provider`, `adapter`, and `interface`. Each has a distinct role and a defined set of rules about what it can access and what it can do. What they share is a common syntax for using, composing, and passing data — described on this page before the individual construct references.
 
 ---
 
@@ -22,7 +22,7 @@ Components sit below the behavioral layer in the WORDS hierarchy. A `state` acti
 | `adapter` | The only construct permitted to perform I/O; the only construct permitted to be async |
 | `interface` | Descriptors for components that don't fit the other constructs — models, helpers, and any other named, typed contract |
 
-A state can use any component except `view` — so `screen`, `adapter`, `provider`, and `interface` are all valid state mounts. A `view` must always have a component parent that passes it what it needs.
+A state can use any component except `view` — so `screen`, `adapter`, `provider`, and `interface` are all valid state uses. A `view` must always have a component parent that passes it what it needs.
 
 ---
 
@@ -36,11 +36,11 @@ screen LoginScreen (
     uses (
         view AppUIModule.HeaderSection,
         view UIModule.LoginForm (
-            onSubmit callback is (
-                state.return(AccountCredentials)
+            onSubmit is (
+                state.return(credentials)
             ),
-            onForgotPassword callback is (
-                state.return(RecoverAccount)
+            onForgotPassword is (
+                state.return(recoverAccount)
             )
         )
     )
@@ -63,7 +63,7 @@ The `uses` block is available to all components and to `state`.
 
 ## Passing Arguments
 
-Arguments are passed to a mounted component using the `is` keyword. The argument name comes first, followed by `is`, followed by the value:
+Arguments are passed to a used component using the `is` keyword. The argument name comes first, followed by `is`, followed by the value:
 
 ```wds
 view UIModule.Notification type is "warning"
@@ -81,7 +81,7 @@ This syntax is consistent with the rest of the WORDS language. The `is` keyword 
 
 ## Conditional Mounting
 
-A component is conditionally useed using `if`. The condition evaluates the current state's context — what type it is, or what value a property holds:
+A component is conditionally mounted using `if`. The condition evaluates the current state's context — what type it is, or what value a property holds:
 
 ```wds
 if state.context is AccountDeauthenticated (
@@ -105,7 +105,7 @@ if state.context.status is "pending" (
 )
 ```
 
-Conditional blocks can appear inside any component's `uses` block. Each is evaluated independently. This is how components adapt what they mount depending on context — the state machine drives the condition, the component responds to it:
+Conditional blocks can appear inside any component's `uses` block. Each is evaluated independently. This is how components decide what they use depending on context — the state machine drives the condition, the component responds to it:
 
 ```wds title="AuthModule/screens/LoginScreen.wds"
 module AuthModule
@@ -122,11 +122,11 @@ screen LoginScreen (
         )
 
         view UIModule.LoginForm (
-            onSubmit callback is (
-                state.return(AccountCredentials)
+            onSubmit is (
+                state.return(credentials)
             ),
-            onForgotPassword callback is (
-                state.return(RecoverAccount)
+            onForgotPassword is (
+                state.return(recoverAccount)
             )
         )
     )
@@ -148,7 +148,7 @@ for state.context.notifications as notification (
 )
 ```
 
-The iteration variable is bound with `as` and is available inside the body block. Each item in the collection produces one mounted instance of the child component.
+The iteration variable is bound with `as` and is available inside the body block. Each item in the collection produces one instance of the child component.
 
 `for ... as` can appear inside a `uses` block alongside other entries:
 
@@ -172,7 +172,7 @@ screen DashboardScreen (
 
 ## Nesting
 
-Components compose by nesting. A `screen` uses `view` components. A `view` can mount further `view` components. There is no depth limit, but the ownership direction is always the same: a parent passes data and handlers down; a child emits events or calls handlers upward.
+Components compose by nesting. A `screen` uses `view` components. A `view` can use further `view` components. There is no depth limit, but the ownership direction is always the same: a parent passes data and handlers down; a child emits events or calls handlers upward.
 
 ```wds title="UIModule/screens/ProductScreen.wds"
 module UIModule
@@ -183,8 +183,8 @@ screen ProductScreen (
             view UIModule.ProductBody (
                 view UIModule.ProductDescription text is state.context.description,
                 view UIModule.ProductActions (
-                    onAddToCart callback is (
-                        state.return(CartItem)
+                    onAddToCart is (
+                        state.return(cartItem)
                     )
                 )
             )
@@ -214,21 +214,21 @@ screen OrderScreen (
         view UIModule.OrderSummary (
             items is state.context.items,
             total is state.context.total,
-            onConfirm callback is (
-                state.return(OrderConfirmed)
+            onConfirm is (
+                state.return(orderConfirmed)
             )
         )
     )
 )
 ```
 
-This unidirectional contract keeps components predictable and reusable. A view that receives everything through props can be mounted anywhere without depending on how the state was entered.
+This unidirectional contract keeps components predictable and reusable. A view that receives everything through props can be used anywhere without depending on how the state was entered.
 
 ---
 
 ## Referencing Components Across Modules
 
-A component defined in one module can be mounted by a component in another. The reference uses the qualified name — the module name followed by a dot and the component name:
+A component defined in one module can be reused by a component in another. The reference uses the qualified name — the module name followed by a dot and the component name:
 
 ```wds
 view AppUIModule.HeaderSection

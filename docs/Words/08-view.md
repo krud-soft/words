@@ -54,7 +54,7 @@ view NotificationBanner "Displays a contextual message to the user" (
 )
 ```
 
-A screen passes the module's state data and callbacks through props. A view passes its own props or derived values down to any views it mounts.
+A screen passes the module's state data and callbacks through props. A view passes its own props or derived values down to any views it uses.
 
 ### `state`
 
@@ -95,8 +95,8 @@ view OrderSummary "Renders a summary of the current order" (
         view UIModule.OrderTotal total is props.total,
 
         view UIModule.OrderActions (
-            onConfirm callback is (props.onConfirm),
-            onCancel callback is (props.onCancel)
+            onConfirm is props.onConfirm,
+            onCancel is props.onCancel
         )
     )
 )

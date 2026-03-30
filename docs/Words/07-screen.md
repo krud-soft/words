@@ -24,8 +24,8 @@ screen LoginScreen "The sign-in surface for unauthenticated users" (
     uses (
         view AppUIModule.HeaderSection,
         view UIModule.LoginForm (
-            onSubmit callback is (
-                state.return(AccountCredentials)
+            onSubmit is (
+                state.return(credentials)
             )
         )
     )
@@ -48,13 +48,13 @@ view UIModule.UserGreeting name is state.context.fullName
 
 ```wds
 view UIModule.LogoutButton (
-    onPress callback is (
-        state.return(SignOutRequest)
+    onPress is (
+        state.return(signOutRequest)
     )
 )
 ```
 
-Both are available anywhere inside the screen's `uses` block — in direct mounts, in conditional blocks, and inside nested view arguments.
+Both are available anywhere inside the screen's `uses` block — in direct uses, in conditional blocks, and inside nested view arguments.
 
 ## Conditional Rendering
 
@@ -73,8 +73,8 @@ screen LoginScreen (
         )
 
         view UIModule.LoginForm (
-            onSubmit callback is (
-                state.return(AccountCredentials)
+            onSubmit is (
+                state.return(credentials)
             )
         )
     )
@@ -87,7 +87,7 @@ For the full conditional and iteration syntax, see [Components](/words/docs/Word
 
 ## Examples
 
-A screen that mounts a loading indicator while authentication is in progress:
+A screen that uses a loading indicator while authentication is in progress:
 
 ```wds title="AuthModule/screens/AuthenticatingScreen.wds"
 module AuthModule
@@ -110,8 +110,8 @@ screen ActiveSessionScreen "The main surface for an authenticated user" (
         ),
         view AppUIModule.MainContent,
         view UIModule.LogoutButton (
-            onPress callback is (
-                state.return(SignOutRequest)
+            onPress is (
+                state.return(signOutRequest)
             )
         )
     )
@@ -130,8 +130,8 @@ screen NotificationsScreen "Lists all notifications for the current user" (
             view UIModule.NotificationCard (
                 message is notification.message,
                 type is notification.type,
-                onDismiss callback is (
-                    state.return(NotificationDismissed)
+                onDismiss is (
+                    state.return(dismissed)
                 )
             )
         )

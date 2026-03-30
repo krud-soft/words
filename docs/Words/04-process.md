@@ -161,7 +161,7 @@ module CheckoutModule "Manages the purchase flow from cart to confirmation" (
 
 ## What a Process Does Not Contain
 
-A process does not implement behavior — it maps it. The logic of what happens inside a state, what components it mounts, what data it accepts, is defined in the state itself. A process only says: given this state and this output, go here next.
+A process does not implement behavior — it maps it. The logic of what happens inside a state, what components it uses, what data it accepts, is defined in the state itself. A process only says: given this state and this output, go here next.
 
 A process does not define contexts. Contexts are standalone constructs. A process references them by name.
 

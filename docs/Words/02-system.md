@@ -28,12 +28,12 @@ system SystemName "A description of the application" (
     interface (
         getContext name(string) returns(context) "Retrieves the value of a stored context by its name"
         setContext name(string) value(context) "Stores a context by name"
-        dropContext name(string) "Removes a context from the system by name"
+        dropContext name(string) "Clears a context identified by name"
     )
 )
 ```
 
-The `system` keyword is followed by the application's name, an optional description in quotes and a body in parentheses. Inside the body, the `modules` block lists every module in the application by name, one per line. The `interface` block is always present and is the same across every `system` — it is not defined by the engineer but is part of the language itself.
+The `system` keyword is followed by the application's name, an optional description in quotes and a body in parentheses. Inside the body, the `modules` block lists every module in the application by name, one per line. The `interface` describes what the system exposes to every module.
 
 The description is optional but recommended — it is the first thing any reader, human or model, will see when opening the specification.
 
@@ -58,7 +58,7 @@ system NotesApp "A personal note-taking application" (
     interface (
         getContext name(string) returns(context) "Retrieves the value of a stored context by its name"
         setContext name(string) value(context) "Stores a context by name"
-        dropContext name(string) "Removes a context from the system by name"
+        dropContext name(string) "Clears a context identified by name"
     )
 )
 ```
@@ -78,7 +78,7 @@ system ShopFront "An e-commerce storefront" (
     interface (
         getContext name(string) returns(context) "Retrieves the value of a stored context by its name"
         setContext name(string) value(context) "Stores a context by name"
-        dropContext name(string) "Removes a context from the system by name"
+        dropContext name(string) "Clears a context identified by name"
     )
 )
 ```
@@ -96,7 +96,7 @@ system ReportingService "Internal data reporting and export service" (
     interface (
         getContext name(string) returns(context) "Retrieves the value of a stored context by its name"
         setContext name(string) value(context) "Stores a context by name"
-        dropContext name(string) "Removes a context from the system by name"
+        dropContext name(string) "Clears a context identified by name"
     )
 )
 ```
