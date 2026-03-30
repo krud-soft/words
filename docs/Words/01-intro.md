@@ -87,7 +87,7 @@ A few things are worth noticing here even before reading the full syntax referen
 
 - The `when` rules in a process read almost like plain English. Each one names the current state, the context it produced, and the state to enter next — followed by a reason.
 - The quoted strings after a `when` rule are transition narratives — a human-readable explanation of why the system moves.
-- `start` names the initial state of the module (if the module has a state start condition).
+- `start` names the initial state of the module, when one exists.
 
 Constructs that belong to a module are written in their own files and carry a `module` declaration on one line before their declaration:
 ```wds title="AuthModule/states/Unauthenticated.wds"
@@ -169,6 +169,32 @@ Default values are declared with `is` — `total(float) is 0.0`, `items(list(Pro
 The `is` keyword assigns a value to a parameter — `path is "/home"` or `handler is ProductsModule`. When used after `if`, it becomes a comparison — `if path is "/home"` or `if path is not "/home"`. A block or expression preceded by `if` is a conditional evaluation.
 
 WORDS specifications are written in `.wds` files, organised under a root directory. Each module has its own folder named after it, with subdirectories for each construct type — `states`, `processes`, `contexts`, `screens`, `views`, `providers`, `adapters`, and `interfaces`. The `system` declaration lives at the root of the directory. This structure mirrors the language hierarchy directly, making any WORDS project navigable without prior knowledge of the codebase.
+
+### Iteration
+
+The `for ... as` construct iterates over a collection and binds each item to a variable for use inside the body block:
+```wds
+for state.context.notifications as notification (
+    view UIModule.NotificationCard (
+        message is notification.message,
+        type is notification.type
+    )
+)
+```
+
+When iterating over a `map`, the `as` clause binds two variables — the key and the value, separated by a comma:
+```wds
+for state.context.productsByCategoryMap as category, products (
+    view UIModule.CategorySection (
+        title is category,
+        items is products
+    )
+)
+```
+
+The collection is referenced by its full path — `state.context.propertyName` inside a screen, or `props.propertyName` inside a view. Variables bound with `as` are scoped to the body block and are not accessible outside it. Each item in the collection produces one instance of the child component.
+
+`for ... as` can appear inside any `uses` block alongside other entries, conditional blocks, and nested components.
 
 ## What You Will Find in This Documentation
 

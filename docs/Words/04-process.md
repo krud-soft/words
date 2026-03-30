@@ -64,6 +64,28 @@ process PasswordReset "Covers the flow from a reset request through token issuan
 
 Each branch is a first-class part of the process. There is no default path and no fallthrough. Every outcome a state can produce must be covered by a corresponding `when` rule.
 
+## Inline Context Construction
+
+When a state is about to be entered from an external trigger — such as an implemented interface handler — it needs a context that matches what the state `receives`. In these cases the context can be constructed inline within the `enter` block, shaping the incoming data into the form the state expects:
+
+```wds title="AuthModule/AuthModule.wds"
+module AuthModule (
+    // processes omitted
+
+    implements SessionModule.SessionExpiredHandler (
+        whenSessionExpired context is SessionModule.SessionExpired (
+            enter Unauthenticated "The user's session has expired" (
+                // the AuthError context block for entering the Unauthenticated state
+                reason is "The session has expired"
+                code is "ERR:01"
+            )
+        )
+    )
+)
+```
+
+The parenthesis block after the transition narrative constructs the context inline. The properties listed must satisfy the shape of the context the receiving state expects.
+
 ## Multiple Processes
 
 A module can define more than one process. Each process covers a distinct scenario within the same functionality. The states and contexts involved in one process may overlap with those of another — a state can appear in multiple processes, and a context produced in one scenario may trigger a transition in another.

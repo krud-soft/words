@@ -138,28 +138,6 @@ state Authenticated receives SystemUser (
 
 A state with no `uses` is valid — it may be a transient condition that exists purely to hold a position in the process map while something external resolves.
 
-## Inline Context Construction
-
-When a state is about to be entered from an external trigger — such as an implemented interface handler — it needs a context that matches what the state `receives`. In these cases the context can be constructed inline within the `enter` block, shaping the incoming data into the form the state expects:
-
-```wds title="AuthModule/AuthModule.wds"
-module AuthModule (
-    // processes omitted
-
-    implements SessionModule.SessionExpiredHandler (
-        whenSessionExpired context is SessionModule.SessionExpired (
-            enter Unauthenticated "The user's session has expired" (
-                // the AuthError context block for entering the Unauthenticated state
-                reason is "The session has expired"
-                code is "ERR:01"
-            )
-        )
-    )
-)
-```
-
-The parenthesis block after the transition narrative constructs the context inline. The properties listed must satisfy the shape of the context the receiving state expects.
-
 ## File Location
 
 Each state lives in its own file. The recommended location is the states directory of its owning module:
