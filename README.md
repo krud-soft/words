@@ -29,13 +29,11 @@ module AuthModule "Handles authentication and deauthentication" (
 
 ---
 
----
-
 ## Getting Started
 
 ### Prerequisites
 
-- [Node.js](https://nodejs.org/) v18 or higher
+- [Node.js](https://nodejs.org/) v20 or higher
 - npm, yarn, or pnpm
 
 ### Installation
@@ -59,6 +57,22 @@ npm run build
 ```
 
 This generates static content into the `build` directory, ready to be served by any static hosting service.
+
+### Type Check
+
+```bash
+npm run typecheck
+```
+
+This checks the TypeScript used by the Docusaurus site and custom theme components.
+
+### Bundled Documentation
+
+```bash
+npm run bundle-docs
+```
+
+This regenerates `words.md` from the files in `docs/Words`. Treat `words.md` as generated output and edit the source files in `docs/Words` instead.
 
 ### Deployment
 
@@ -96,6 +110,12 @@ WORDS is built on a small number of constructs organized into two layers:
 
 ---
 
+## WORDS Syntax Highlighting
+
+Code fences marked as `wds` or `words` are highlighted with `@words-lang/parser`. The custom renderer lives in `src/theme/CodeBlock/Content` and falls back to the default Docusaurus renderer for all other languages.
+
+---
+
 ## Contributing
 
 Contributions to the documentation are welcome. Please open an issue before submitting a pull request for significant changes, so the direction can be discussed first.
@@ -106,6 +126,7 @@ When editing documentation:
 - Include transition narratives in all `process` examples
 - Follow the file naming conventions shown in each section's **File Location** guide
 - Test your changes locally with `npm start` before submitting
+- Run `npm run typecheck` and `npm run build` when changing site code, theme overrides, or dependencies
 
 ---
 
