@@ -150,7 +150,7 @@ state Authenticated receives SystemUser (
 
 Inside a state, `context` refers to the context the state received on entry. The state's `uses` block can pass that value into adapters, providers, runtime calls, or screens. A screen activated by the state also has direct access to the same `context`.
 
-A state with no `uses` is valid — it may be a transient condition that exists purely to hold a position in the process map while something external resolves.
+A state with no `uses` is valid when it exists only as a named condition entered or exited through external module events, implemented handlers, or explicit runtime calls.
 
 ## File Location
 

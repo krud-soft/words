@@ -4,13 +4,13 @@ title: Interface
 
 # Interface
 
-An `interface` is a contract component — a named, typed construct for concepts that do not render UI, compute derived data, or perform I/O. It can represent a data model, a handler shape, a callable contract, or another typed concept the system needs to name explicitly.
+An `interface` is a contract component — a named, typed construct for concepts that do not render UI, compute derived data, or perform I/O directly. It can represent a data model, a handler shape, a callable contract, or another typed concept the system needs to name explicitly.
 
 An `interface` component is distinct from the `interface` block that appears inside a module definition. The module-level `interface` block declares a module's API — what other modules can call or implement. The `interface` component is a construct in its own right, with its own `props`, `state`, and `uses`, that lives in the component layer alongside screens, views, providers, and adapters.
 
 ## Purpose
 
-An `interface` component gives a name and a shape to concepts that exist in the system but don't perform I/O, don't render UI, and don't compute derived data. A `Product` model, a `CatalogueFilter` contract, a `RouteSwitchHandler` callback shape — these are all `interface` components. They are the typed vocabulary the rest of the system uses.
+An `interface` component gives a name and a shape to concepts that exist in the system but don't perform I/O directly, don't render UI, and don't compute derived data. A `Product` model, a `CatalogueFilter` contract, a `RouteSwitchHandler` callback shape — these are all `interface` components. They are the typed vocabulary the rest of the system uses.
 
 Because every other component's `interface` block declares parameter and return types using named constructs, `interface` components are what give those types their shape. A provider that returns `list(Product)` depends on `Product` being defined as an `interface` component somewhere in the module.
 
@@ -224,7 +224,7 @@ When the adapter method resolves, `onLoad` fires and receives the adapter's retu
 
 ## `uses`
 
-A `uses` block activates adapters or providers that supply the interface component's internal data. Each adapter call declares an `onLoad` argument whose body fires when the adapter resolves. The parameter name is inferred from the adapter method's return type signature, and the body assigns it directly into `state`:
+A `uses` block activates adapters or providers that supply the interface component's internal data. An interface does not perform I/O directly; if it needs external data, it must activate an adapter. Each adapter call declares an `onLoad` argument whose body fires when the adapter resolves. The parameter name is inferred from the adapter method's return type signature, and the body assigns it directly into `state`:
 
 ```wds
 onLoad is (
