@@ -110,7 +110,7 @@ module ProductsModule (
 )
 ```
 
-This design keeps feature modules loosely coupled. Each module takes from the system or subscribes to what it needs and handles its own transitions internally.
+This design keeps feature modules loosely coupled. Each module reads shared context, calls exposed APIs, or subscribes to events explicitly, then handles its own transitions internally.
 
 ## Examples
 

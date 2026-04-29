@@ -12,11 +12,11 @@ This page gives you a working mental model of WORDS before you dive into each co
 
 Every system, at some level of abstraction, can be described as a machine that moves between conditions. The system is resident in a state. Something happens: user input, an adapter result, a runtime event, or a module callback. The state returns a context, and the process maps that context to the next state.
 
-WORDS makes this structure explicit and consistent across the entire system. A `system` names the top-level product and declares which modules compose it. A module owns one functional boundary. A process maps state transitions. A state represents one condition in that process. A context is the typed message a state receives or returns. Components — screens, views, providers, adapters, interfaces — are the pieces closest to implementation that interact with the world and with each other.
+WORDS makes this structure explicit and consistent across the entire system. A `system` names the top-level product and declares which modules compose it. A module owns one functional boundary. A process maps state transitions. A state represents one condition in that process. A context is the typed message a state receives or returns. Components — screens, views, providers, adapters, interfaces — render UI, compute data, expose contracts, or bridge to external resources through adapters.
 
 Behavioral structure in WORDS is explicit. If a state can produce two different outputs, both are declared. If a module needs to react to an event in another module, that contract is written down. If a component interacts with an external resource — such as making a request, reading storage, or reading a sensor value — it is an adapter, the only construct in the language permitted to perform I/O.
 
-This explicitness is what makes WORDS useful for both humans and models. An engineer can read a WORDS file and understand exactly what the system does in a given condition. A language model can read the same file and generate a correct implementation without guessing.
+This explicitness is what makes WORDS useful for both humans and models. An engineer can read a WORDS file and understand exactly what the system does in a given condition. A language model can read the same file and generate an implementation with fewer unstated assumptions.
 
 ## The Constructs at a Glance
 
@@ -42,7 +42,7 @@ The second layer covers **components** — constructs that sit closer to impleme
 | `adapter` | Bridges the system to external services, APIs, or hardware; the only construct permitted to perform I/O |
 | `interface` | A named typed contract — models, handler shapes, callable contracts, and shared data shapes |
 
-These constructs compose in a strict hierarchy. A system declares its modules. A module owns its processes and states. A state uses components. This structure is not enforced by a type system — it is enforced by the language itself. There is no valid way to write a WORDS specification that violates these relationships.
+These constructs compose in a strict hierarchy. A system declares its modules. A module owns its processes and states. A state uses components. A valid WORDS specification is expected to preserve these ownership relationships.
 
 ## What the Syntax Looks Like
 
