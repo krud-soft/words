@@ -10,13 +10,13 @@ This page gives you a working mental model of WORDS before you dive into each co
 
 ## The Core Idea
 
-Every system, at some level of abstraction, can be described as a machine that moves between conditions. The system is waiting for input. It receives something. It transitions. It produces an output. It waits again.
+Every system, at some level of abstraction, can be described as a machine that moves between conditions. The system is resident in a state. Something happens: user input, an adapter result, a runtime event, or a module callback. The state returns a context, and the process maps that context to the next state.
 
-WORDS makes this structure explicit and consistent across the entire system. A `system` names the top-level product and declares which modules compose it. A module groups a functionality. A process maps out its transitions. A state represents one condition in that process. A context is the data that travels between states. Components — screens, views, providers, adapters, interfaces — are the pieces closest to implementation that interact with the world and with each other.
+WORDS makes this structure explicit and consistent across the entire system. A `system` names the top-level product and declares which modules compose it. A module owns one functional boundary. A process maps state transitions. A state represents one condition in that process. A context is the typed message a state receives or returns. Components — screens, views, providers, adapters, interfaces — render UI, compute data, expose contracts, or bridge to external resources through adapters.
 
-Nothing in a WORDS specification is implicit. If a state can produce two different outputs, both are declared. If a module needs to react to an event in another module, that contract is written down. If a component interacts with the external medium - like making a request, reading a sensor value etc. - it is an adapter — the only construct in the language permitted to do so.
+Behavioral structure in WORDS is explicit. If a state can produce two different outputs, both are declared. If a module needs to react to an event in another module, that contract is written down. If a component interacts with an external resource — such as making a request, reading storage, or reading a sensor value — it is an adapter, the only construct in the language permitted to perform I/O.
 
-This explicitness is what makes WORDS useful for both humans and models. An engineer can read a WORDS file and understand exactly what the system does in a given condition. A language model can read the same file and generate a correct implementation without guessing.
+This explicitness is what makes WORDS useful for both humans and models. An engineer can read a WORDS file and understand exactly what the system does in a given condition. A language model can read the same file and generate an implementation with fewer unstated assumptions.
 
 ## The Constructs at a Glance
 
@@ -26,23 +26,23 @@ The first layer covers **system organisation and behavior** — these are the co
 
 | Construct | What it represents |
 |---|---|
-| `system` | The top-level descriptor; names the product, declares which modules compose it, and exposes runtime access to them |
-| `module` | Groups processes, states, contexts and components around the same functionality |
-| `process` | Breaks the functionality into scenarios and specifies the transition map for each |
+| `system` | The root declaration; names the product, declares which modules compose it, and exposes runtime access to them |
+| `module` | Owns one functional boundary and the processes, states, contexts, and components within it |
+| `process` | Breaks behavior into scenarios and specifies the transition map for each |
 | `state` | A condition the module is in; defines what it receives and what it can return |
-| `context` | Structured data that flows between states |
+| `context` | The typed message a state receives or returns |
 
 The second layer covers **components** — constructs that sit closer to implementation and interact with the runtime environment:
 
 | Construct | What it represents |
 |---|---|
-| `screen` | The top-level UI unit used by a state; has direct access to state data |
+| `screen` | The top-level UI unit used by a state; has direct access to the active state's `context` |
 | `view` | A reusable rendering unit; receives everything it needs via props |
 | `provider` | Computes and exposes in-memory data — normalized models, filtered collections, or registries — originating from within the system, not from external sources |
 | `adapter` | Bridges the system to external services, APIs, or hardware; the only construct permitted to perform I/O |
-| `interface` | Descriptors for components that don't fit the other constructs — models, helpers, and any other named, typed contract |
+| `interface` | A named typed contract — models, handler shapes, callable contracts, and shared data shapes |
 
-These constructs compose in a strict hierarchy. A system declares its modules. A module owns its processes and states. A state uses components. This structure is not enforced by a type system — it is enforced by the language itself. There is no valid way to write a WORDS specification that violates these relationships.
+These constructs compose in a strict hierarchy. A system declares its modules. A module owns its processes and states. A state uses components. A valid WORDS specification is expected to preserve these ownership relationships.
 
 ## What the Syntax Looks Like
 
@@ -66,7 +66,7 @@ system MyApplication "A full-stack web application" (
 )
 ```
 
-Each module in the system describes a distinct functionality. Here is an authentication module showing the process of authentication:
+Each module in the system describes a distinct functional area. Here is an authentication module showing the process of authentication:
 ```wds title="AuthModule/AuthModule.wds"
 module AuthModule "Handles authentication and deauthentication" (
 
@@ -104,7 +104,7 @@ Modules are isolated by design. A module does not reach into another module's st
 
 A module's API can take two forms. The first exposes access to runtime components within the module's own scope — other modules call these directly through the module's interface. The second exposes a subscription mechanism — a module declares a handler interface describing the shape of a callback, other modules implement that interface and register themselves, and when the owning module fires the event every registered handler is called.
 
-Context sharing across module boundaries is handled by `system` directly. A module can persist a context using `system.setContext()`, making it available to any other module that retrieves it using `system.getContext()`.
+Context sharing across module boundaries is handled by `system` directly. A module can persist a context using `system.setContext`, making it available to any other module that retrieves it using `system.getContext`.
 
 The routing example illustrates the subscription mechanism: `RoutingModule` dispatches URL changes, and each module implements the handler interface, registers its own paths, and owns its own transitions entirely.
 
@@ -118,7 +118,10 @@ module ProductsModule (
         )
     )
 
-    system.RoutingModule.subscribeRoute path is "/products", handler is ProductsModule
+    system.RoutingModule.subscribeRoute (
+        path is "/products",
+        handler is ProductsModule
+    )
 
 )
 ```
@@ -127,7 +130,7 @@ Through this design, modules can be added or removed with minimal coupling, and 
 
 ## The Role of Context
 
-Context is the information exchange unit in WORDS. It defines what a state receives and returns, and reaches beyond module boundaries through `system.setContext()` and `system.getContext()`. It is the structured, typed data that drives process transitions.
+A `context` is the information exchange unit in WORDS: the typed message a state receives or returns. It carries data between states, but it is not the action performed by the state. Context values can also be persisted across module boundaries through `system.setContext` and retrieved through `system.getContext`.
 
 Every context is explicitly declared with named properties and their types defined in a parenthesis block — nothing is inferred or anonymous. A state can produce none, one, or multiple contexts, each declared in its `returns` block. A state that receives a context declares it in `receives`, marking it with `?` if it is optional.
 ```wds title="AuthModule/contexts/AccountCredentials.wds"
@@ -158,7 +161,7 @@ WORDS uses a consistent typing structure across all constructs: a name followed 
 | `list(Type)` | Ordered collection | `is []` |
 | `map(KeyType, ValueType)` | Key-value pairs | `is {}` |
 
-A named `interface` component acts as a custom type anywhere a type is expected — `list(Product)`, `map(string, OrderSummary)`, and so on.
+A named `interface` component acts as a custom type anywhere a type is expected — `list(Product)`, `map(string, OrderSummary)`, and so on. Interfaces can also be polymorphic through explicit `includes` declarations: a value whose interface includes another interface can be used wherever the included interface is expected.
 
 A `?` prefix marks a value as optional — `?Product` means the value may or may not be present. Optional values do not need a default.
 
@@ -166,7 +169,28 @@ Default values are declared with `is` — `total(float) is 0.0`, `items(list(Pro
 
 ### Keywords
 
-The `is` keyword assigns a value to a parameter — `path is "/home"` or `handler is ProductsModule`. When used after `if`, it becomes a comparison — `if path is "/home"` or `if path is not "/home"`. A block or expression preceded by `if` is a conditional evaluation.
+The `is` keyword assigns a named argument in a call — `path is "/home"` or `handler is ProductsModule`. When used after `if`, it becomes a comparison — `if path is "/home"` or `if path is not "/home"`. A block preceded by `if` is a conditional evaluation.
+
+### Calls
+
+Calls use a resolved path followed by a parenthesized named-argument block:
+
+```wds
+system.setContext (
+    name is AuthenticatedSession,
+    value is context
+)
+```
+
+All call arguments are named. A single-argument call uses the same shape as a multi-argument call:
+
+```wds
+system.getContext (
+    name is AuthenticatedSession
+)
+```
+
+The dot in a call path resolves ownership or runtime access. The argument block is what makes the path a call.
 
 WORDS specifications are written in `.wds` files, organised under a root directory. Each module has its own folder named after it, with subdirectories for each construct type — `states`, `processes`, `contexts`, `screens`, `views`, `providers`, `adapters`, and `interfaces`. The `system` declaration lives at the root of the directory. This structure mirrors the language hierarchy directly, making any WORDS project navigable without prior knowledge of the codebase.
 
@@ -181,7 +205,9 @@ At the **call site**, the argument name is inferred directly from the prop decla
 ```wds
 view UIModule.LoginForm (
     onSubmit is (
-        state.return(credentials)
+        state.return (
+            value is credentials
+        )
     )
 )
 ```
@@ -192,7 +218,7 @@ When a view forwards a callback to a child, it can shape the arguments inline. T
 
 ```wds
 view UIModule.OrderActions (
-    onConfirm is props.onConfirm(
+    onConfirm is props.onConfirm (
         orderId is props.orderId,
         action is "Confirmed"
     )
@@ -207,7 +233,7 @@ A callback prop with **no argument declaration** — `onConfirm` with no name or
 
 The `for ... as` construct iterates over a collection and binds each item to a variable for use inside the body block:
 ```wds
-for state.context.notifications as notification (
+for context.notifications as notification (
     view UIModule.NotificationCard (
         message is notification.message,
         type is notification.type
@@ -217,7 +243,7 @@ for state.context.notifications as notification (
 
 When iterating over a `map`, the `as` clause binds two variables — the key and the value, separated by a comma:
 ```wds
-for state.context.productsByCategoryMap as category, products (
+for context.productsByCategoryMap as category, products (
     view UIModule.CategorySection (
         title is category,
         items is products
@@ -225,7 +251,7 @@ for state.context.productsByCategoryMap as category, products (
 )
 ```
 
-The collection is referenced by its full path — `state.context.propertyName` inside a screen, or `props.propertyName` inside a view. Variables bound with `as` are scoped to the body block and are not accessible outside it. Each item in the collection produces one instance of the child component.
+The collection is referenced by its full path — `context.propertyName` inside a screen, or `props.propertyName` inside a view. Variables bound with `as` are scoped to the body block and are not accessible outside it. Each item in the collection produces one instance of the child component.
 
 `for ... as` can appear inside any `uses` block alongside other entries, conditional blocks, and nested components.
 
@@ -233,8 +259,8 @@ The collection is referenced by its full path — `state.context.propertyName` i
 
 The rest of this documentation covers each construct in depth, with full syntax rules, examples, and design guidance. The recommended reading order follows the natural hierarchy of a WORDS system:
 
-1. **System** — the top-level descriptor and module registry
-2. **Modules** — the boundary of a functionality
+1. **System** — the root declaration and module registry
+2. **Modules** — functional boundaries
 3. **Processes** — the transition maps that define behavior
 4. **States** — the conditions a module can be in
 5. **Contexts** — the data that drives transitions

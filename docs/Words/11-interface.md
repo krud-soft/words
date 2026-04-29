@@ -4,19 +4,19 @@ title: Interface
 
 # Interface
 
-An `interface` is a contract component — a named, typed construct for anything that does not fit the role of a screen, view, provider, or adapter. It can represent a data model, a helper, a handler shape, a callable contract, or any other typed concept the system needs to name explicitly.
+An `interface` is a contract component — a named, typed construct for concepts that do not render UI, compute derived data, or perform I/O directly. It can represent a data model, a handler shape, a callable contract, or another typed concept the system needs to name explicitly.
 
 An `interface` component is distinct from the `interface` block that appears inside a module definition. The module-level `interface` block declares a module's API — what other modules can call or implement. The `interface` component is a construct in its own right, with its own `props`, `state`, and `uses`, that lives in the component layer alongside screens, views, providers, and adapters.
 
 ## Purpose
 
-An `interface` component gives a name and a shape to concepts that exist in the system but don't perform I/O, don't render UI, and don't compute derived data. A `Product` model, a `CatalogueFilter` helper, a `RouteSwitchHandler` callback shape — these are all `interface` components. They are the typed vocabulary the rest of the system uses.
+An `interface` component gives a name and a shape to concepts that exist in the system but don't perform I/O directly, don't render UI, and don't compute derived data. A `Product` model, a `CatalogueFilter` contract, a `RouteSwitchHandler` callback shape — these are all `interface` components. They are the typed vocabulary the rest of the system uses.
 
 Because every other component's `interface` block declares parameter and return types using named constructs, `interface` components are what give those types their shape. A provider that returns `list(Product)` depends on `Product` being defined as an `interface` component somewhere in the module.
 
 ## Syntax
 
-The `interface` keyword is followed by a name in PascalCase, an optional description in quotes, and a body in parentheses. The body declares `props`, optionally `state`, any methods the contract exposes, and optionally a `uses` block:
+The `interface` keyword is followed by a name in PascalCase, an optional `includes` clause, an optional description in quotes, and a body in parentheses. The body declares `props`, optionally `state`, any methods the contract exposes, and optionally a `uses` block:
 
 ```wds title="ProductsModule/interfaces/Product.wds"
 module ProductsModule
@@ -33,9 +33,32 @@ interface Product "Represents a single product in the catalogue" (
 
 The `module` declaration on the line above is the ownership declaration — it binds this interface to its module.
 
+An interface can explicitly include one or more other interfaces. This is the only polymorphism mechanism in WORDS:
+
+```wds title="UsersModule/interfaces/AdminUser.wds"
+module UsersModule
+interface AdminUser includes UserIdentity "Represents an administrator account" (
+    props (
+        permissions(list(Permission))
+    )
+)
+```
+
+The `includes` clause is nominal and explicit. `AdminUser` can be used anywhere `UserIdentity` is expected because it declares that relationship by name. WORDS does not infer polymorphism from matching property names alone.
+
+When more than one interface is included, the included names are separated by commas:
+
+```wds
+interface StaffAdmin includes UserIdentity, AuditActor (
+    props (
+        permissions(list(Permission))
+    )
+)
+```
+
 ## `props`
 
-`props` declares the typed properties that define the shape of the contract. For a data model, these are the fields — accessible via dot notation anywhere the interface is referenced. For a helper or handler, these are the parameters it expects:
+`props` declares the typed properties that define the shape of the contract. For a data model, these are the fields — accessible via dot notation anywhere the interface is referenced. For handler-like contracts, these are the values the handler expects:
 
 ```wds title="ProductsModule/interfaces/Product.wds"
 module ProductsModule
@@ -50,7 +73,7 @@ interface Product "Represents a single product in the catalogue" (
 )
 ```
 
-A component that receives a `Product` can access its fields directly — `product.name`, `product.price`, `product.id` — the same way `state.context` properties and `props` properties are accessed elsewhere in the language.
+A component that receives a `Product` can access its fields directly — `product.name`, `product.price`, `product.id` — the same way `context` properties and `props` properties are accessed elsewhere in the language.
 
 ```wds title="CartModule/interfaces/CartItem.wds"
 module CartModule
@@ -77,9 +100,70 @@ interface CatalogueFilter "Defines the shape of a filter applied to the catalogu
 )
 ```
 
+## Polymorphism
+
+Interface polymorphism is expressed with `includes`. It allows one data interface to declare that it is assignable to another interface:
+
+```wds title="UsersModule/interfaces/UserIdentity.wds"
+module UsersModule
+interface UserIdentity "Identifies a user anywhere in the system" (
+    props (
+        id(string),
+        fullName(string)
+    )
+)
+```
+
+```wds title="UsersModule/interfaces/AdminUser.wds"
+module UsersModule
+interface AdminUser includes UserIdentity "Represents a user with administrative permissions" (
+    props (
+        permissions(list(Permission))
+    )
+)
+```
+
+A value of type `AdminUser` can now be passed wherever `UserIdentity` is expected:
+
+```wds title="UsersModule/views/AdminHeader.wds"
+module UsersModule
+view AdminHeader "Displays the active administrator" (
+    props (
+        admin(AdminUser)
+    )
+    uses (
+        view UsersModule.UserBadge (
+            user is props.admin
+        )
+    )
+)
+```
+
+```wds title="UsersModule/views/UserBadge.wds"
+module UsersModule
+view UserBadge "Displays a user identity" (
+    props (
+        user(UserIdentity)
+    )
+)
+```
+
+During semantic analysis, assignment is valid when the actual type is the same as the expected type, or when the actual interface includes the expected interface directly or transitively.
+
+`includes` is deliberately limited to data interfaces — interfaces that declare `props` only. An interface that declares methods, `state`, or `uses` cannot be included and cannot include another interface. This avoids behavioral inheritance, override rules, lifecycle ambiguity, and hidden runtime behavior.
+
+When an interface includes another interface:
+
+- The included interface's props are readable on the including interface.
+- Cycles are invalid.
+- Duplicate prop names are invalid unless they have the exact same type.
+- Cross-module includes use the qualified name, such as `SharedModule.UserIdentity`.
+
+WORDS does not support inheritance for modules, states, processes, screens, views, providers, or adapters. Reuse in those constructs is expressed through explicit composition with `uses`, module contracts, callbacks, and runtime calls.
+
 ## Methods
 
-An `interface` component can expose methods directly in its body after `props`. Methods declare behavior — actions the contract can perform or values it can compute — not data access. Data access is handled through `props` directly via dot notation. Each method is named, lists its parameters if any, and declares a return type if it produces one:
+An `interface` component can expose methods directly in its body after `props`. Methods declare callable behavior — actions the contract can perform or values it can compute — not field access. Field access is handled through `props` directly via dot notation. Each method is named, lists its parameters if any, and declares a return type if it produces one:
 
 ```wds title="RoutingModule/interfaces/Router.wds"
 module RoutingModule
@@ -116,14 +200,18 @@ interface OrderDetail "Represents a fully detailed order" (
         shippingAddress(?ShippingAddress)
     )
     uses (
-        adapter system.OrdersModule.OrdersAdapter.loadOrderItems orderId is props.id,
+        adapter system.OrdersModule.OrdersAdapter.loadOrderItems (
+            orderId is props.id,
             onLoad is (
                 state.items is items
-            ),
-        adapter system.OrdersModule.OrdersAdapter.loadShippingAddress orderId is props.id,
+            )
+        ),
+        adapter system.OrdersModule.OrdersAdapter.loadShippingAddress (
+            orderId is props.id,
             onLoad is (
                 state.shippingAddress is shippingAddress
             )
+        )
     )
     getItems returns(list(OrderItem))
         "Returns the order items once loaded"
@@ -136,7 +224,7 @@ When the adapter method resolves, `onLoad` fires and receives the adapter's retu
 
 ## `uses`
 
-A `uses` block activates adapters or providers that supply the interface component's internal data. Each adapter call declares an `onLoad` argument whose body fires when the adapter resolves. The parameter name is inferred from the adapter method's return type signature, and the body assigns it directly into `state`:
+A `uses` block activates adapters or providers that supply the interface component's internal data. An interface does not perform I/O directly; if it needs external data, it must activate an adapter. Each adapter call declares an `onLoad` argument whose body fires when the adapter resolves. The parameter name is inferred from the adapter method's return type signature, and the body assigns it directly into `state`:
 
 ```wds
 onLoad is (
@@ -161,14 +249,18 @@ interface ProductDetails "Loads and exposes full product details" (
         relatedProducts(list(Product)) is []
     )
     uses (
-        adapter system.ProductsModule.ProductsAdapter.loadReviews productId is props.id,
+        adapter system.ProductsModule.ProductsAdapter.loadReviews (
+            productId is props.id,
             onLoad is (
                 state.reviews is reviews
-            ),
-        adapter system.ProductsModule.ProductsAdapter.loadRelated productId is props.id,
+            )
+        ),
+        adapter system.ProductsModule.ProductsAdapter.loadRelated (
+            productId is props.id,
             onLoad is (
                 state.relatedProducts is relatedProducts
             )
+        )
     )
     getReviews returns(list(ProductReview))
         "Returns the product reviews once loaded"
@@ -207,7 +299,10 @@ module ProductsModule (
         )
     )
 
-    system.RoutingModule.subscribeRoute path is "/products", handler is ProductsModule
+    system.RoutingModule.subscribeRoute (
+        path is "/products",
+        handler is ProductsModule
+    )
 )
 ```
 
@@ -289,6 +384,6 @@ The file is named after the interface it defines.
 
 ## Relationship to Other Constructs
 
-An `interface` component can be used by a `state`, a `screen`, a `view`, a `provider`, or an `adapter`. It provides the typed vocabulary — models, helpers, handler shapes, callable contracts — that all other components reference in their own `props` and method declarations.
+An `interface` component can be used by a `state`, a `screen`, a `view`, a `provider`, or an `adapter`. It provides the typed vocabulary — models, handler shapes, callable contracts, and shared data shapes — that all other components reference in their own `props` and method declarations.
 
 At the module level, `interface` is also the mechanism through which modules expose APIs and declare subscription contracts. This is a different role from the component — it is the module's boundary, not a construct that lives in the component layer — but both share the same keyword and the same principle: a named, typed shape that the rest of the system can depend on.

@@ -4,13 +4,13 @@ title: Process
 
 # Process
 
-A `process` is the transition map for a module's functionality. It declares every state the module can be in under a given scenario, and for each state it declares what context triggers a move and where the module goes next. A module can have more than one process — each covering a distinct scenario within the same functionality.
+A `process` is the transition map for a module's behavior. It declares every state the module can be in under a given scenario, and for each state it declares which returned context maps to which next state. A module can have more than one process — each covering a distinct scenario within the same functional area.
 
 ## Purpose
 
-A process makes behavior explicit. Rather than leaving transition logic scattered across implementation files or implicit in a model's interpretation of natural language, a process collects every possible movement in one place and names each one. An engineer reading a process block can answer three questions without reading anything else: what states exist in this scenario, what does each state produce to move forward, and where does the module go when it does.
+A process makes behavior explicit. Rather than leaving transition logic scattered across implementation files or implicit in a model's interpretation of natural language, a process collects every possible movement in one place and names each one. An engineer reading a process block can answer three questions without reading anything else: what states exist in this scenario, what can each state return, and which state follows each returned context.
 
-This completeness is not incidental. A WORDS specification is only as useful as its coverage of the real behavior. A process that omits an error path is a process that will produce an implementation that silently ignores that error. WORDS makes omission visible — if a transition is not written down, it does not exist.
+This completeness is not incidental. A WORDS specification is only as useful as its coverage of the real behavior. A process that omits an error path leaves that outcome unspecified. WORDS makes omission visible: if a transition is not written down, it does not exist.
 
 ## Syntax
 
@@ -88,7 +88,7 @@ The parenthesis block after the transition narrative constructs the context inli
 
 ## Multiple Processes
 
-A module can define more than one process. Each process covers a distinct scenario within the same functionality. The states and contexts involved in one process may overlap with those of another — a state can appear in multiple processes, and a context produced in one scenario may trigger a transition in another.
+A module can define more than one process. Each process covers a distinct scenario within the same functional area. The states and contexts involved in one process may overlap with those of another — a state can appear in multiple processes, and a context produced in one scenario may be handled by another.
 
 ```wds title="AuthModule/AuthModule.wds"
 module AuthModule "Handles authentication and deauthentication" (

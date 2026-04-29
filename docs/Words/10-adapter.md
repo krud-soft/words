@@ -87,7 +87,7 @@ adapter CatalogueAdapter "Connects to the product catalogue service" (
 
 ## `interface`
 
-`interface` declares the methods the adapter exposes to other components. Each method is named, lists its parameters if any, and declares its return type if it produces one. Return types are `interface` components — models, collections, or any other named, typed contract:
+`interface` declares the methods the adapter exposes to other components. Each method is named, lists its parameters if any, and declares its return type if it produces one. Return types can be primitives, interface components, lists, maps, optional values, or other declared types:
 
 ```wds title="OrdersModule/adapters/OrdersAdapter.wds"
 module OrdersModule
@@ -186,4 +186,4 @@ The file is named after the adapter it defines.
 
 An adapter is used by a `state` or consumed by a `provider` through its `props`. It is the only construct permitted to perform I/O and the only one permitted to be async — all external communication in the system flows through adapters.
 
-An adapter exposes its methods through `interface`, whose parameter and return types are `interface` components — models, collections, or other typed contracts defined in the module. Its internal `state` is not accessible from outside — it is the adapter's own concern.
+An adapter exposes its methods through `interface`. Its method parameter and return types can be primitives, interface components, lists, maps, optional values, or other declared types. Its internal `state` is not accessible from outside — it is the adapter's own concern.

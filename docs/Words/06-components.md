@@ -16,13 +16,13 @@ Components sit below the behavioral layer in the WORDS hierarchy. A `state` acti
 
 | Construct | Role |
 |---|---|
-| `screen` | Top-level UI unit; used by a state; has implicit access to `state.context` |
+| `screen` | Top-level UI unit; used by a state; has implicit access to the state's `context` |
 | `view` | Reusable rendering unit; used by screens or other views; receives all data via props |
 | `provider` | Computes and exposes in-memory derived data; no I/O |
 | `adapter` | The only construct permitted to perform I/O; the only construct permitted to be async |
-| `interface` | Descriptors for components that don't fit the other constructs — models, helpers, and any other named, typed contract |
+| `interface` | Named typed contracts — models, handler shapes, callable contracts, and shared data shapes |
 
-A state can use any component except `view` — so `screen`, `adapter`, `provider`, and `interface` are all valid state uses. A `view` must always have a component parent that passes it what it needs.
+A state can activate screens, adapters, providers, and interface components. It cannot activate a `view` directly; a view must always have a screen or another view as its component parent.
 
 ---
 
@@ -37,10 +37,14 @@ screen LoginScreen (
         view AppUIModule.HeaderSection,
         view UIModule.LoginForm (
             onSubmit is (
-                state.return(credentials)
+                state.return (
+                    value is credentials
+                )
             ),
             onForgotPassword is (
-                state.return(recoverAccount)
+                state.return (
+                    value is recoverAccount
+                )
             )
         )
     )
@@ -63,19 +67,24 @@ The `uses` block is available to all components and to `state`.
 
 ## Passing Arguments
 
-Arguments are passed to a used component using the `is` keyword. The argument name comes first, followed by `is`, followed by the value:
+Any component use that passes data uses a parenthesized named-argument block. The argument name comes first, followed by `is`, followed by the value:
 
 ```wds
-view UIModule.Notification type is "warning"
+view UIModule.Notification (
+    type is "warning"
+)
 ```
 
-When more than one argument is passed, they are separated by a comma:
+When more than one argument is passed, they are separated by a comma inside the block:
 
 ```wds
-view UIModule.Notification type is "warning", message is state.context.reason
+view UIModule.Notification (
+    type is "warning",
+    message is context.reason
+)
 ```
 
-This syntax is consistent with the rest of the WORDS language. The `is` keyword assigns a value. The same keyword is used for comparisons in conditional expressions — context determines which role it plays.
+All call arguments are named; WORDS does not use positional arguments. The same `is` keyword is used for comparisons in conditional expressions, where context determines which role it plays.
 
 ---
 
@@ -84,24 +93,33 @@ This syntax is consistent with the rest of the WORDS language. The `is` keyword 
 A component is conditionally mounted using `if`. The condition evaluates the current state's context — what type it is, or what value a property holds:
 
 ```wds
-if state.context is AccountDeauthenticated (
-    view UIModule.Notification type is "warning", message is state.context.reason
+if context is AccountDeauthenticated (
+    view UIModule.Notification (
+        type is "warning",
+        message is context.reason
+    )
 )
 ```
 
 The negative form uses `is not`:
 
 ```wds
-if state.context is not AccountRecovered (
-    view UIModule.Notification type is "error", message is state.context.reason
+if context is not AccountRecovered (
+    view UIModule.Notification (
+        type is "error",
+        message is context.reason
+    )
 )
 ```
 
 A property on the context can also be evaluated directly:
 
 ```wds
-if state.context.status is "pending" (
-    view UIModule.Notification type is "info", message is "Your request is being processed"
+if context.status is "pending" (
+    view UIModule.Notification (
+        type is "info",
+        message is "Your request is being processed"
+    )
 )
 ```
 
@@ -113,20 +131,30 @@ screen LoginScreen (
     uses (
         view AppUIModule.HeaderSection,
 
-        if state.context is AccountDeauthenticated (
-            view UIModule.Notification type is "warning", message is state.context.reason
+        if context is AccountDeauthenticated (
+            view UIModule.Notification (
+                type is "warning",
+                message is context.reason
+            )
         )
 
-        if state.context is AccountRecovered (
-            view UIModule.Notification type is "success", message is state.context.message
+        if context is AccountRecovered (
+            view UIModule.Notification (
+                type is "success",
+                message is context.message
+            )
         )
 
         view UIModule.LoginForm (
             onSubmit is (
-                state.return(credentials)
+                state.return (
+                    value is credentials
+                )
             ),
             onForgotPassword is (
-                state.return(recoverAccount)
+                state.return (
+                    value is recoverAccount
+                )
             )
         )
     )
@@ -140,7 +168,7 @@ screen LoginScreen (
 A component iterates over a collection using `for ... as`. The syntax names the collection, binds the iteration variable with `as`, then the body in parentheses:
 
 ```wds
-for state.context.notifications as notification (
+for context.notifications as notification (
     view UIModule.NotificationCard (
         message is notification.message,
         type is notification.type
@@ -156,9 +184,11 @@ The iteration variable is bound with `as` and is available inside the body block
 module UIModule
 screen DashboardScreen (
     uses (
-        view UIModule.PageHeader title is "Dashboard",
+        view UIModule.PageHeader (
+            title is "Dashboard"
+        ),
 
-        for state.context.notifications as notification (
+        for context.notifications as notification (
             view UIModule.NotificationCard (
                 message is notification.message,
                 type is notification.type
@@ -179,12 +209,18 @@ module UIModule
 screen ProductScreen (
     uses (
         view UIModule.ProductLayout (
-            view UIModule.ProductHeader title is state.context.name,
+            view UIModule.ProductHeader (
+                title is context.name
+            ),
             view UIModule.ProductBody (
-                view UIModule.ProductDescription text is state.context.description,
+                view UIModule.ProductDescription (
+                    text is context.description
+                ),
                 view UIModule.ProductActions (
                     onAddToCart is (
-                        state.return(cartItem)
+                        state.return (
+                            value is cartItem
+                        )
                     )
                 )
             )
@@ -212,10 +248,12 @@ module UIModule
 screen OrderScreen (
     uses (
         view UIModule.OrderSummary (
-            items is state.context.items,
-            total is state.context.total,
+            items is context.items,
+            total is context.total,
             onConfirm is (
-                state.return(orderConfirmed)
+                state.return (
+                    value is orderConfirmed
+                )
             )
         )
     )
@@ -232,13 +270,19 @@ A component defined in one module can be reused by a component in another. The r
 
 ```wds
 view AppUIModule.HeaderSection
-view UIModule.Notification type is "warning", message is state.context.reason
+view UIModule.Notification (
+    type is "warning",
+    message is context.reason
+)
 ```
 
 This applies to all component types, including `interface`. An `interface` defined in one module can be used by a state, a screen, or a view in another module using the same qualified name syntax:
 
 ```wds
-uses interface UIModule.PaginationModel page is state.context.page, total is state.context.total
+uses interface UIModule.PaginationModel (
+    page is context.page,
+    total is context.total
+)
 ```
 
 Only components that are explicitly exposed by a module can be referenced this way.
