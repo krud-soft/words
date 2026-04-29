@@ -104,7 +104,7 @@ Modules are isolated by design. A module does not reach into another module's st
 
 A module's API can take two forms. The first exposes access to runtime components within the module's own scope — other modules call these directly through the module's interface. The second exposes a subscription mechanism — a module declares a handler interface describing the shape of a callback, other modules implement that interface and register themselves, and when the owning module fires the event every registered handler is called.
 
-Context sharing across module boundaries is handled by `system` directly. A module can persist a context using `system.setContext()`, making it available to any other module that retrieves it using `system.getContext()`.
+Context sharing across module boundaries is handled by `system` directly. A module can persist a context using `system.setContext`, making it available to any other module that retrieves it using `system.getContext`.
 
 The routing example illustrates the subscription mechanism: `RoutingModule` dispatches URL changes, and each module implements the handler interface, registers its own paths, and owns its own transitions entirely.
 
@@ -118,7 +118,10 @@ module ProductsModule (
         )
     )
 
-    system.RoutingModule.subscribeRoute path is "/products", handler is ProductsModule
+    system.RoutingModule.subscribeRoute (
+        path is "/products",
+        handler is ProductsModule
+    )
 
 )
 ```
@@ -127,7 +130,7 @@ Through this design, modules can be added or removed with minimal coupling, and 
 
 ## The Role of Context
 
-Context is the information exchange unit in WORDS. It defines what a state receives and returns, and reaches beyond module boundaries through `system.setContext()` and `system.getContext()`. It is the structured, typed data that drives process transitions.
+Context is the information exchange unit in WORDS. It defines what a state receives and returns, and reaches beyond module boundaries through `system.setContext` and `system.getContext`. It is the structured, typed data that drives process transitions.
 
 Every context is explicitly declared with named properties and their types defined in a parenthesis block — nothing is inferred or anonymous. A state can produce none, one, or multiple contexts, each declared in its `returns` block. A state that receives a context declares it in `receives`, marking it with `?` if it is optional.
 ```wds title="AuthModule/contexts/AccountCredentials.wds"
@@ -158,7 +161,7 @@ WORDS uses a consistent typing structure across all constructs: a name followed 
 | `list(Type)` | Ordered collection | `is []` |
 | `map(KeyType, ValueType)` | Key-value pairs | `is {}` |
 
-A named `interface` component acts as a custom type anywhere a type is expected — `list(Product)`, `map(string, OrderSummary)`, and so on.
+A named `interface` component acts as a custom type anywhere a type is expected — `list(Product)`, `map(string, OrderSummary)`, and so on. Interfaces can also be polymorphic through explicit `includes` declarations: a value whose interface includes another interface can be used wherever the included interface is expected.
 
 A `?` prefix marks a value as optional — `?Product` means the value may or may not be present. Optional values do not need a default.
 
@@ -166,7 +169,28 @@ Default values are declared with `is` — `total(float) is 0.0`, `items(list(Pro
 
 ### Keywords
 
-The `is` keyword assigns a value to a parameter — `path is "/home"` or `handler is ProductsModule`. When used after `if`, it becomes a comparison — `if path is "/home"` or `if path is not "/home"`. A block or expression preceded by `if` is a conditional evaluation.
+The `is` keyword assigns a named argument in a call — `path is "/home"` or `handler is ProductsModule`. When used after `if`, it becomes a comparison — `if path is "/home"` or `if path is not "/home"`. A block or expression preceded by `if` is a conditional evaluation.
+
+### Calls
+
+Runtime calls use a resolved path followed by a parenthesized named-argument block:
+
+```wds
+system.setContext (
+    name is AuthenticatedSession,
+    value is context
+)
+```
+
+All call arguments are named. A single-argument call uses the same shape as a multi-argument call:
+
+```wds
+system.getContext (
+    name is AuthenticatedSession
+)
+```
+
+The dot in a call path only resolves ownership or runtime access. The argument block is what makes the path a call.
 
 WORDS specifications are written in `.wds` files, organised under a root directory. Each module has its own folder named after it, with subdirectories for each construct type — `states`, `processes`, `contexts`, `screens`, `views`, `providers`, `adapters`, and `interfaces`. The `system` declaration lives at the root of the directory. This structure mirrors the language hierarchy directly, making any WORDS project navigable without prior knowledge of the codebase.
 
@@ -181,7 +205,9 @@ At the **call site**, the argument name is inferred directly from the prop decla
 ```wds
 view UIModule.LoginForm (
     onSubmit is (
-        state.return(credentials)
+        state.return (
+            value is credentials
+        )
     )
 )
 ```
@@ -192,7 +218,7 @@ When a view forwards a callback to a child, it can shape the arguments inline. T
 
 ```wds
 view UIModule.OrderActions (
-    onConfirm is props.onConfirm(
+    onConfirm is props.onConfirm (
         orderId is props.orderId,
         action is "Confirmed"
     )
@@ -207,7 +233,7 @@ A callback prop with **no argument declaration** — `onConfirm` with no name or
 
 The `for ... as` construct iterates over a collection and binds each item to a variable for use inside the body block:
 ```wds
-for state.context.notifications as notification (
+for context.notifications as notification (
     view UIModule.NotificationCard (
         message is notification.message,
         type is notification.type
@@ -217,7 +243,7 @@ for state.context.notifications as notification (
 
 When iterating over a `map`, the `as` clause binds two variables — the key and the value, separated by a comma:
 ```wds
-for state.context.productsByCategoryMap as category, products (
+for context.productsByCategoryMap as category, products (
     view UIModule.CategorySection (
         title is category,
         items is products
@@ -225,7 +251,7 @@ for state.context.productsByCategoryMap as category, products (
 )
 ```
 
-The collection is referenced by its full path — `state.context.propertyName` inside a screen, or `props.propertyName` inside a view. Variables bound with `as` are scoped to the body block and are not accessible outside it. Each item in the collection produces one instance of the child component.
+The collection is referenced by its full path — `context.propertyName` inside a screen, or `props.propertyName` inside a view. Variables bound with `as` are scoped to the body block and are not accessible outside it. Each item in the collection produces one instance of the child component.
 
 `for ... as` can appear inside any `uses` block alongside other entries, conditional blocks, and nested components.
 

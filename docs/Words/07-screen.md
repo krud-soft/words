@@ -10,7 +10,7 @@ A screen is always used by a state. It is never used by another component.
 
 ## Purpose
 
-A screen's role is to control the UI for the duration of a state. It reads from the state's context, decides what to render based on it, and wires user interactions back to the state through `state.return()`. Everything visible to the user while the module is in that state is the screen's responsibility.
+A screen's role is to control the UI for the duration of a state. It reads from the state's `context`, decides what to render based on it, and wires user interactions back to the state through `state.return`. Everything visible to the user while the module is in that state is the screen's responsibility.
 
 A screen does not implement logic. It does not compute data, perform I/O, or make decisions about what happens next — those concerns belong to providers, adapters, and the process respectively. A screen reads what the state gives it and expresses it.
 
@@ -25,7 +25,9 @@ screen LoginScreen "The sign-in surface for unauthenticated users" (
         view AppUIModule.HeaderSection,
         view UIModule.LoginForm (
             onSubmit is (
-                state.return(credentials)
+                state.return (
+                    value is credentials
+                )
             )
         )
     )
@@ -36,20 +38,24 @@ The `module` declaration on the line above is the ownership declaration — it b
 
 ## Accessing State
 
-A screen has implicit access to the full state object. Two properties are available everywhere inside the screen:
+A screen has implicit access to two runtime values:
 
-**`state.context`** — the context the state received on entry. The screen reads from it to decide what to render and what data to pass to child views:
+**`context`** — the context the state received on entry. The screen reads from it to decide what to render and what data to pass to child views:
 
 ```wds
-view UIModule.UserGreeting name is state.context.fullName
+view UIModule.UserGreeting (
+    name is context.fullName
+)
 ```
 
-**`state.return()`** — the mechanism through which the screen drives a state transition. Passing a context name to `state.return()` produces that context and triggers the corresponding `when` rule in the process:
+**`state.return`** — the mechanism through which the screen drives a state transition. Passing a context value to `state.return` produces that context and triggers the corresponding `when` rule in the process:
 
 ```wds
 view UIModule.LogoutButton (
     onPress is (
-        state.return(signOutRequest)
+        state.return (
+            value is signOutRequest
+        )
     )
 )
 ```
@@ -64,17 +70,25 @@ A screen adapts what it uses based on the state's received context. The `if` key
 module AuthModule
 screen LoginScreen (
     uses (
-        if state.context is AccountDeauthenticated (
-            view UIModule.Notification type is "warning", message is state.context.reason
+        if context is AccountDeauthenticated (
+            view UIModule.Notification (
+                type is "warning",
+                message is context.reason
+            )
         )
 
-        if state.context is AccountRecovered (
-            view UIModule.Notification type is "success", message is state.context.message
+        if context is AccountRecovered (
+            view UIModule.Notification (
+                type is "success",
+                message is context.message
+            )
         )
 
         view UIModule.LoginForm (
             onSubmit is (
-                state.return(credentials)
+                state.return (
+                    value is credentials
+                )
             )
         )
     )
@@ -94,7 +108,9 @@ module AuthModule
 screen AuthenticatingScreen "Shown while credentials are being verified" (
     uses (
         view UIModule.LoadingSpinner,
-        view UIModule.StatusMessage text is "Verifying your credentials"
+        view UIModule.StatusMessage (
+            text is "Verifying your credentials"
+        )
     )
 )
 ```
@@ -106,12 +122,14 @@ module SessionModule
 screen ActiveSessionScreen "The main surface for an authenticated user" (
     uses (
         view AppUIModule.NavigationBar (
-            currentUser is state.context.fullName
+            currentUser is context.fullName
         ),
         view AppUIModule.MainContent,
         view UIModule.LogoutButton (
             onPress is (
-                state.return(signOutRequest)
+                state.return (
+                    value is signOutRequest
+                )
             )
         )
     )
@@ -124,14 +142,18 @@ A screen that iterates over a collection and renders a card for each item:
 module NotificationsModule
 screen NotificationsScreen "Lists all notifications for the current user" (
     uses (
-        view UIModule.PageHeader title is "Notifications",
+        view UIModule.PageHeader (
+            title is "Notifications"
+        ),
 
-        for state.context.notifications as notification (
+        for context.notifications as notification (
             view UIModule.NotificationCard (
                 message is notification.message,
                 type is notification.type,
                 onDismiss is (
-                    state.return(dismissed)
+                    state.return (
+                        value is dismissed
+                    )
                 )
             )
         )
@@ -161,6 +183,6 @@ The file is named after the screen it defines.
 
 A screen is used by a `state`. The state determines when the screen is active and what context it receives. A screen cannot be used by any other component.
 
-A screen uses `view` components, passing them data from `state.context` and wiring their interactions to `state.return()`. Views have no access to the state — the screen is the only point of contact between the state and the view tree.
+A screen uses `view` components, passing them data from `context` and wiring their interactions to `state.return`. Views have no access to the state — the screen is the only point of contact between the state and the view tree.
 
 A screen can reference components from other modules using their qualified name — `ModuleName.ComponentName` — provided those components are exposed by their module.

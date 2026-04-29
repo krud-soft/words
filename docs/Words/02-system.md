@@ -14,9 +14,28 @@ An engineer reading a `system` block can understand the shape of the entire appl
 
 ## Runtime Access
 
-Beyond naming and listing modules, `system` exposes runtime access to them — such as `system.RoutingModule` — and provides a built-in interface for persisting contexts across module boundaries. The interface exposes three methods: `getContext`, which retrieves a stored context by name, `setContext`, which stores one, and dropContext() which removes the stored context entirely. These are the only behavioral concerns that live at the `system` level. Everything else belongs to the modules themselves.
+Beyond naming and listing modules, `system` exposes runtime access to them — such as `system.RoutingModule` — and provides a built-in interface for persisting contexts across module boundaries. The interface exposes three methods: `getContext`, which retrieves a stored context by name, `setContext`, which stores one, and `dropContext`, which removes the stored context entirely. These are the only behavioral concerns that live at the `system` level. Everything else belongs to the modules themselves.
 
 The `system.` prefix is used wherever a reference is resolved at runtime through the module registry, rather than declared as a static design-time dependency. A state using an adapter within its own module, or a screen referencing a view from another module, are design-time dependencies and use the qualified name alone — `ModuleName.ComponentName`. A call that must be dispatched through the system at runtime — such as `system.setContext`, `system.RoutingModule.dispatch`, or an interface component loading data from another module's adapter — uses the `system.` prefix to signal that resolution happens through the registry, not statically.
+
+Runtime calls use parenthesized named arguments:
+
+```wds
+system.getContext (
+    name is AuthenticatedSession
+)
+
+system.setContext (
+    name is AuthenticatedSession,
+    value is context
+)
+
+system.RoutingModule.dispatch (
+    path is "/home"
+)
+```
+
+The dot resolves the runtime path. The parenthesized argument block invokes it.
 
 ## Syntax
 ```wds title="SystemName.wds"

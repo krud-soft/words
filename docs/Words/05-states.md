@@ -44,7 +44,7 @@ state StartAuthenticating receives AccountCredentials (
 )
 ```
 
-Here `StartAuthenticating` requires `AccountCredentials` on entry — it cannot be entered without one. The credentials are available to whatever the state uses via `state.context`.
+Here `StartAuthenticating` requires `AccountCredentials` on entry — it cannot be entered without one. The credentials are available to whatever the state uses via `context`.
 
 A state that can be entered from more than one origin — including cold, with no prior context — marks `receives` as optional:
 
@@ -56,7 +56,7 @@ state Unauthenticated receives ?AuthError (
 )
 ```
 
-The `?` prefix signals that `AuthError` may or may not be present. The state handles both cases. When present, the used screen can surface the error via `state.context`. When absent, the screen renders its default condition.
+The `?` prefix signals that `AuthError` may or may not be present. The state handles both cases. When present, the used screen can surface the error via `context`. When absent, the screen renders its default condition.
 
 A state that receives no context at all omits the `receives` clause entirely.
 
@@ -70,7 +70,9 @@ state StartAuthenticating receives AccountCredentials (
     returns AuthError, SystemUser
     uses (
         screen UIModule.LoadingScreen,
-        adapter AuthAdapter.login credentials is state.context
+        adapter AuthAdapter.login (
+            credentials is context
+        )
     )
 )
 ```
@@ -85,14 +87,21 @@ state SessionValidating receives StoredSession (
     returns (
         SessionToken (
             // side effect executed before producing the SessionToken context
-            system.setContext name is SessionToken, value is state.context
+            system.setContext (
+                name is SessionToken,
+                value is context
+            )
         )
         SessionValidationError (
             // side effect executed before producing the validation error
-            system.dropContext name is SessionToken
+            system.dropContext (
+                name is SessionToken
+            )
         )
     )
-    uses adapter SessionAdapter.validateSession existing is state.context
+    uses adapter SessionAdapter.validateSession (
+        existing is context
+    )
 )
 ```
 
@@ -120,7 +129,7 @@ state SessionIdle receives ?SessionValidationError (
 )
 ```
 
-A state can use more than one thing. When multiple entries are needed, they are listed in a parenthesis block and separated by comma:
+A state can use multiple constructs. These can be adapters, runtime calls, or a mix of both. When multiple entries are needed, they are listed in a parenthesis block and separated by comma:
 
 ```wds title="AuthModule/states/Authenticated.wds"
 module AuthModule
@@ -128,13 +137,18 @@ state Authenticated receives SystemUser (
     returns LogoutContext
 
     uses (
-        system.setContext name is SystemUser, value is state.context,
-        system.RoutingModule.dispatch path is "/home"
+        system.setContext (
+            name is SystemUser,
+            value is context
+        ),
+        system.RoutingModule.dispatch (
+            path is "/home"
+        )
     )
 )
 ```
 
-`state.context` gives the used components direct access to the context the state received on entry. How components are `used` and how they consume the `state.context` depends on the target framework or implementation.
+`context` gives the used components direct access to the context the state received on entry. How components are `used` and how they consume the `context` depends on the target framework or implementation.
 
 A state with no `uses` is valid — it may be a transient condition that exists purely to hold a position in the process map while something external resolves.
 
@@ -197,13 +211,20 @@ module SessionModule
 state SessionValidating receives StoredSession (
     returns (
         SessionToken (
-            system.setContext name is SessionToken, value is state.context
+            system.setContext (
+                name is SessionToken,
+                value is context
+            )
         )
         SessionValidationError (
-            system.dropContext name is SessionToken
+            system.dropContext (
+                name is SessionToken
+            )
         )
     )
-    uses adapter SessionAdapter.validateSession existing is state.context
+    uses adapter SessionAdapter.validateSession (
+        existing is context
+    )
 )
 ```
 
@@ -227,17 +248,23 @@ module CatalogModule
 screen OrderSummaryScreen "Shows the order summary screen" (
     uses (
         view AppUIModule.NavigationBar (
-            currentUser is system.getContext(SystemUser)
+            currentUser is system.getContext (
+                name is SystemUser
+            )
         ),
         view OrderSummary (
-            orderId state.context.id,
+            orderId is context.id,
             items is [],
-            total is state.context.total,
+            total is context.total,
             onConfirm is (
-                state.return(confirmDetails)
+                state.return (
+                    value is confirmDetails
+                )
             ),
             onCancel is (
-                state.return(cancelDetails)
+                state.return (
+                    value is cancelDetails
+                )
             ),
         )
     )

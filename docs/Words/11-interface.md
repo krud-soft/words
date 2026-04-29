@@ -16,7 +16,7 @@ Because every other component's `interface` block declares parameter and return 
 
 ## Syntax
 
-The `interface` keyword is followed by a name in PascalCase, an optional description in quotes, and a body in parentheses. The body declares `props`, optionally `state`, any methods the contract exposes, and optionally a `uses` block:
+The `interface` keyword is followed by a name in PascalCase, an optional `includes` clause, an optional description in quotes, and a body in parentheses. The body declares `props`, optionally `state`, any methods the contract exposes, and optionally a `uses` block:
 
 ```wds title="ProductsModule/interfaces/Product.wds"
 module ProductsModule
@@ -32,6 +32,29 @@ interface Product "Represents a single product in the catalogue" (
 ```
 
 The `module` declaration on the line above is the ownership declaration — it binds this interface to its module.
+
+An interface can explicitly include one or more other interfaces. This is the only polymorphism mechanism in WORDS:
+
+```wds title="UsersModule/interfaces/AdminUser.wds"
+module UsersModule
+interface AdminUser includes UserIdentity "Represents an administrator account" (
+    props (
+        permissions(list(Permission))
+    )
+)
+```
+
+The `includes` clause is nominal and explicit. `AdminUser` can be used anywhere `UserIdentity` is expected because it declares that relationship by name. WORDS does not infer polymorphism from matching property names alone.
+
+When more than one interface is included, the included names are separated by commas:
+
+```wds
+interface StaffAdmin includes UserIdentity, AuditActor (
+    props (
+        permissions(list(Permission))
+    )
+)
+```
 
 ## `props`
 
@@ -50,7 +73,7 @@ interface Product "Represents a single product in the catalogue" (
 )
 ```
 
-A component that receives a `Product` can access its fields directly — `product.name`, `product.price`, `product.id` — the same way `state.context` properties and `props` properties are accessed elsewhere in the language.
+A component that receives a `Product` can access its fields directly — `product.name`, `product.price`, `product.id` — the same way `context` properties and `props` properties are accessed elsewhere in the language.
 
 ```wds title="CartModule/interfaces/CartItem.wds"
 module CartModule
@@ -76,6 +99,67 @@ interface CatalogueFilter "Defines the shape of a filter applied to the catalogu
     )
 )
 ```
+
+## Polymorphism
+
+Interface polymorphism is expressed with `includes`. It allows one data interface to declare that it satisfies another interface's shape:
+
+```wds title="UsersModule/interfaces/UserIdentity.wds"
+module UsersModule
+interface UserIdentity "Identifies a user anywhere in the system" (
+    props (
+        id(string),
+        fullName(string)
+    )
+)
+```
+
+```wds title="UsersModule/interfaces/AdminUser.wds"
+module UsersModule
+interface AdminUser includes UserIdentity "Represents a user with administrative permissions" (
+    props (
+        permissions(list(Permission))
+    )
+)
+```
+
+A value of type `AdminUser` can now be passed wherever `UserIdentity` is expected:
+
+```wds title="UsersModule/views/AdminHeader.wds"
+module UsersModule
+view AdminHeader "Displays the active administrator" (
+    props (
+        admin(AdminUser)
+    )
+    uses (
+        view UsersModule.UserBadge (
+            user is props.admin
+        )
+    )
+)
+```
+
+```wds title="UsersModule/views/UserBadge.wds"
+module UsersModule
+view UserBadge "Displays a user identity" (
+    props (
+        user(UserIdentity)
+    )
+)
+```
+
+For semantic analysis, assignment is valid when the actual type is the same as the expected type, or when the actual interface includes the expected interface directly or transitively.
+
+`includes` is deliberately limited to data interfaces — interfaces that declare `props` only. An interface that declares methods, `state`, or `uses` cannot be included and cannot include another interface. This avoids behavioral inheritance, override rules, lifecycle ambiguity, and hidden runtime behavior.
+
+When an interface includes another interface:
+
+- The included interface's props are readable on the including interface.
+- Cycles are invalid.
+- Duplicate prop names are invalid unless they have the exact same type.
+- Cross-module includes use the qualified name, such as `SharedModule.UserIdentity`.
+
+WORDS does not support inheritance for modules, states, processes, screens, views, providers, or adapters. Reuse in those constructs is expressed through explicit composition with `uses`, module contracts, callbacks, and runtime calls.
 
 ## Methods
 
@@ -116,14 +200,18 @@ interface OrderDetail "Represents a fully detailed order" (
         shippingAddress(?ShippingAddress)
     )
     uses (
-        adapter system.OrdersModule.OrdersAdapter.loadOrderItems orderId is props.id,
+        adapter system.OrdersModule.OrdersAdapter.loadOrderItems (
+            orderId is props.id,
             onLoad is (
                 state.items is items
-            ),
-        adapter system.OrdersModule.OrdersAdapter.loadShippingAddress orderId is props.id,
+            )
+        ),
+        adapter system.OrdersModule.OrdersAdapter.loadShippingAddress (
+            orderId is props.id,
             onLoad is (
                 state.shippingAddress is shippingAddress
             )
+        )
     )
     getItems returns(list(OrderItem))
         "Returns the order items once loaded"
@@ -161,14 +249,18 @@ interface ProductDetails "Loads and exposes full product details" (
         relatedProducts(list(Product)) is []
     )
     uses (
-        adapter system.ProductsModule.ProductsAdapter.loadReviews productId is props.id,
+        adapter system.ProductsModule.ProductsAdapter.loadReviews (
+            productId is props.id,
             onLoad is (
                 state.reviews is reviews
-            ),
-        adapter system.ProductsModule.ProductsAdapter.loadRelated productId is props.id,
+            )
+        ),
+        adapter system.ProductsModule.ProductsAdapter.loadRelated (
+            productId is props.id,
             onLoad is (
                 state.relatedProducts is relatedProducts
             )
+        )
     )
     getReviews returns(list(ProductReview))
         "Returns the product reviews once loaded"
@@ -207,7 +299,10 @@ module ProductsModule (
         )
     )
 
-    system.RoutingModule.subscribeRoute path is "/products", handler is ProductsModule
+    system.RoutingModule.subscribeRoute (
+        path is "/products",
+        handler is ProductsModule
+    )
 )
 ```
 

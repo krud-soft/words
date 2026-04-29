@@ -91,16 +91,20 @@ view OrderSummary "Renders a summary of the current order" (
         onCancel cancelDetails(OrderCancelled)
     )
     uses (
-        view UIModule.OrderItemList items is props.items,
-        view UIModule.OrderTotal total is props.total,
+        view UIModule.OrderItemList (
+            items is props.items
+        ),
+        view UIModule.OrderTotal (
+            total is props.total
+        ),
         view UIModule.OrderActions (
             // shapes the arguments to type of confirmDetails, OrderConfirmed
-            onConfirm is props.onConfirm(
+            onConfirm is props.onConfirm (
                 orderId is props.orderId, 
                 action is "Confirmed"
             ),
             // shapes the arguments to type of cancelDetails, OrderCancelled
-            onCancel is props.onConfirm(
+            onCancel is props.onCancel (
                 orderId is props.orderId,
                 action is "Canceled"
             )
@@ -120,8 +124,12 @@ view OrderActions "Renders the confirm and cancel controls for an order" (
         onCancel
     )
     uses (
-        view UIModule.PrimaryButton onClick is props.onConfirm,
-        view UIModule.SecondaryButton onClick is props.onCancel
+        view UIModule.PrimaryButton (
+            onClick is props.onConfirm
+        ),
+        view UIModule.SecondaryButton (
+            onClick is props.onCancel
+        )
     )
 )
 ```
@@ -200,6 +208,6 @@ The file is named after the view it defines.
 
 A view is used by a `screen` or by another `view`. It cannot be used by a `state` directly — a screen is always the entry point between the state and the view tree.
 
-A view receives data from its parent via `props` and surfaces interactions upward via `props` callbacks. It has no access to `state.context` or `state.return()` — those are available only to the screen.
+A view receives data from its parent via `props` and surfaces interactions upward via `props` callbacks. It has no access to `context` or `state.return` — those are available only to the screen.
 
 A view can use other views, composing larger UI units. It can reference views from other modules using their qualified name — `ModuleName.ViewName` — provided those views are exposed by their module.
