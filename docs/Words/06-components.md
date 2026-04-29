@@ -20,9 +20,9 @@ Components sit below the behavioral layer in the WORDS hierarchy. A `state` acti
 | `view` | Reusable rendering unit; used by screens or other views; receives all data via props |
 | `provider` | Computes and exposes in-memory derived data; no I/O |
 | `adapter` | The only construct permitted to perform I/O; the only construct permitted to be async |
-| `interface` | Descriptors for components that don't fit the other constructs — models, helpers, and any other named, typed contract |
+| `interface` | Named typed contracts — models, handler shapes, callable contracts, and shared data shapes |
 
-A state can use any component except `view` — so `screen`, `adapter`, `provider`, and `interface` are all valid state uses. A `view` must always have a component parent that passes it what it needs.
+A state can activate screens, adapters, providers, and interface components. It cannot activate a `view` directly; a view must always have a screen or another view as its component parent.
 
 ---
 
@@ -67,7 +67,7 @@ The `uses` block is available to all components and to `state`.
 
 ## Passing Arguments
 
-Arguments are passed to a used component using a parenthesized named-argument block. The argument name comes first, followed by `is`, followed by the value:
+Any component use that passes data uses a parenthesized named-argument block. The argument name comes first, followed by `is`, followed by the value:
 
 ```wds
 view UIModule.Notification (
@@ -84,7 +84,7 @@ view UIModule.Notification (
 )
 ```
 
-This syntax is consistent with the rest of the WORDS language. The `is` keyword assigns a value. The same keyword is used for comparisons in conditional expressions — context determines which role it plays.
+All call arguments are named; WORDS does not use positional arguments. The same `is` keyword is used for comparisons in conditional expressions, where context determines which role it plays.
 
 ---
 

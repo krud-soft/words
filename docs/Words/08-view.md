@@ -54,7 +54,7 @@ view NotificationBanner "Displays a contextual message to the user" (
 )
 ```
 
-A screen passes the module's state data and callbacks through props. A view passes its own props or derived values down to any views it uses.
+A screen passes the active state's context data and callbacks through props. A view passes its own props or derived values down to any views it uses.
 
 ### `state`
 
@@ -98,12 +98,12 @@ view OrderSummary "Renders a summary of the current order" (
             total is props.total
         ),
         view UIModule.OrderActions (
-            // shapes the arguments to type of confirmDetails, OrderConfirmed
+            // shapes the arguments for confirmDetails, whose type is OrderConfirmed
             onConfirm is props.onConfirm (
                 orderId is props.orderId, 
                 action is "Confirmed"
             ),
-            // shapes the arguments to type of cancelDetails, OrderCancelled
+            // shapes the arguments for cancelDetails, whose type is OrderCancelled
             onCancel is props.onCancel (
                 orderId is props.orderId,
                 action is "Canceled"
@@ -119,7 +119,7 @@ view OrderSummary "Renders a summary of the current order" (
 module UIModule
 view OrderActions "Renders the confirm and cancel controls for an order" (
     props (
-        // not type for props means these are callback functions with no arguments
+        // a callback prop with no typed argument carries no payload
         onConfirm,
         onCancel
     )

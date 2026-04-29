@@ -4,13 +4,13 @@ title: Interface
 
 # Interface
 
-An `interface` is a contract component — a named, typed construct for anything that does not fit the role of a screen, view, provider, or adapter. It can represent a data model, a helper, a handler shape, a callable contract, or any other typed concept the system needs to name explicitly.
+An `interface` is a contract component — a named, typed construct for concepts that do not render UI, compute derived data, or perform I/O. It can represent a data model, a handler shape, a callable contract, or another typed concept the system needs to name explicitly.
 
 An `interface` component is distinct from the `interface` block that appears inside a module definition. The module-level `interface` block declares a module's API — what other modules can call or implement. The `interface` component is a construct in its own right, with its own `props`, `state`, and `uses`, that lives in the component layer alongside screens, views, providers, and adapters.
 
 ## Purpose
 
-An `interface` component gives a name and a shape to concepts that exist in the system but don't perform I/O, don't render UI, and don't compute derived data. A `Product` model, a `CatalogueFilter` helper, a `RouteSwitchHandler` callback shape — these are all `interface` components. They are the typed vocabulary the rest of the system uses.
+An `interface` component gives a name and a shape to concepts that exist in the system but don't perform I/O, don't render UI, and don't compute derived data. A `Product` model, a `CatalogueFilter` contract, a `RouteSwitchHandler` callback shape — these are all `interface` components. They are the typed vocabulary the rest of the system uses.
 
 Because every other component's `interface` block declares parameter and return types using named constructs, `interface` components are what give those types their shape. A provider that returns `list(Product)` depends on `Product` being defined as an `interface` component somewhere in the module.
 
@@ -58,7 +58,7 @@ interface StaffAdmin includes UserIdentity, AuditActor (
 
 ## `props`
 
-`props` declares the typed properties that define the shape of the contract. For a data model, these are the fields — accessible via dot notation anywhere the interface is referenced. For a helper or handler, these are the parameters it expects:
+`props` declares the typed properties that define the shape of the contract. For a data model, these are the fields — accessible via dot notation anywhere the interface is referenced. For handler-like contracts, these are the values the handler expects:
 
 ```wds title="ProductsModule/interfaces/Product.wds"
 module ProductsModule
@@ -102,7 +102,7 @@ interface CatalogueFilter "Defines the shape of a filter applied to the catalogu
 
 ## Polymorphism
 
-Interface polymorphism is expressed with `includes`. It allows one data interface to declare that it satisfies another interface's shape:
+Interface polymorphism is expressed with `includes`. It allows one data interface to declare that it is assignable to another interface:
 
 ```wds title="UsersModule/interfaces/UserIdentity.wds"
 module UsersModule
@@ -148,7 +148,7 @@ view UserBadge "Displays a user identity" (
 )
 ```
 
-For semantic analysis, assignment is valid when the actual type is the same as the expected type, or when the actual interface includes the expected interface directly or transitively.
+During semantic analysis, assignment is valid when the actual type is the same as the expected type, or when the actual interface includes the expected interface directly or transitively.
 
 `includes` is deliberately limited to data interfaces — interfaces that declare `props` only. An interface that declares methods, `state`, or `uses` cannot be included and cannot include another interface. This avoids behavioral inheritance, override rules, lifecycle ambiguity, and hidden runtime behavior.
 
@@ -163,7 +163,7 @@ WORDS does not support inheritance for modules, states, processes, screens, view
 
 ## Methods
 
-An `interface` component can expose methods directly in its body after `props`. Methods declare behavior — actions the contract can perform or values it can compute — not data access. Data access is handled through `props` directly via dot notation. Each method is named, lists its parameters if any, and declares a return type if it produces one:
+An `interface` component can expose methods directly in its body after `props`. Methods declare callable behavior — actions the contract can perform or values it can compute — not field access. Field access is handled through `props` directly via dot notation. Each method is named, lists its parameters if any, and declares a return type if it produces one:
 
 ```wds title="RoutingModule/interfaces/Router.wds"
 module RoutingModule
@@ -384,6 +384,6 @@ The file is named after the interface it defines.
 
 ## Relationship to Other Constructs
 
-An `interface` component can be used by a `state`, a `screen`, a `view`, a `provider`, or an `adapter`. It provides the typed vocabulary — models, helpers, handler shapes, callable contracts — that all other components reference in their own `props` and method declarations.
+An `interface` component can be used by a `state`, a `screen`, a `view`, a `provider`, or an `adapter`. It provides the typed vocabulary — models, handler shapes, callable contracts, and shared data shapes — that all other components reference in their own `props` and method declarations.
 
 At the module level, `interface` is also the mechanism through which modules expose APIs and declare subscription contracts. This is a different role from the component — it is the module's boundary, not a construct that lives in the component layer — but both share the same keyword and the same principle: a named, typed shape that the rest of the system can depend on.

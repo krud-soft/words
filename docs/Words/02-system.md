@@ -8,15 +8,15 @@ The `system` construct is the entry point of every WORDS specification. It names
 
 ## Purpose
 
-`system` does not describe behavior, states, transitions or data. Its role is organisational: it breaks the application into named modules, each responsible for a distinct major functionality, so that any change — whether to a specification or an implementation — can live within the context of that specific functionality.
+`system` does not define module behavior, states, transitions, or domain data. Its role is organisational: it breaks the application into named modules, each responsible for a distinct functional area, so that any change — whether to a specification or an implementation — can live within the right boundary.
 
-An engineer reading a `system` block can understand the shape of the entire application — what functionalities it contains, how many there are, what they are called — without reading anything else.
+An engineer reading a `system` block can understand the shape of the entire application — which functional areas it contains, how many there are, and what they are called — without reading anything else.
 
 ## Runtime Access
 
-Beyond naming and listing modules, `system` exposes runtime access to them — such as `system.RoutingModule` — and provides a built-in interface for persisting contexts across module boundaries. The interface exposes three methods: `getContext`, which retrieves a stored context by name, `setContext`, which stores one, and `dropContext`, which removes the stored context entirely. These are the only behavioral concerns that live at the `system` level. Everything else belongs to the modules themselves.
+Beyond naming and listing modules, `system` exposes runtime access to them — such as `system.RoutingModule` — and provides a built-in interface for persisting contexts across module boundaries. The interface exposes three methods: `getContext`, which retrieves a stored context by name, `setContext`, which stores one, and `dropContext`, which removes the stored context entirely. These are the only runtime capabilities that live at the `system` level. Everything else belongs to the modules themselves.
 
-The `system.` prefix is used wherever a reference is resolved at runtime through the module registry, rather than declared as a static design-time dependency. A state using an adapter within its own module, or a screen referencing a view from another module, are design-time dependencies and use the qualified name alone — `ModuleName.ComponentName`. A call that must be dispatched through the system at runtime — such as `system.setContext`, `system.RoutingModule.dispatch`, or an interface component loading data from another module's adapter — uses the `system.` prefix to signal that resolution happens through the registry, not statically.
+The `system.` prefix marks a call resolved through the running system registry, especially built-in system operations and cross-module runtime calls. A state using an adapter within its own module, or a screen referencing a view from another module, is declaring a design-time dependency and uses the qualified name alone — `ModuleName.ComponentName`. A call that must be dispatched through the running system — such as `system.setContext`, `system.RoutingModule.dispatch`, or an interface component loading data from another module's adapter — uses the `system.` prefix to signal registry-based resolution.
 
 Runtime calls use parenthesized named arguments:
 
@@ -35,7 +35,7 @@ system.RoutingModule.dispatch (
 )
 ```
 
-The dot resolves the runtime path. The parenthesized argument block invokes it.
+In these examples, the dot resolves the runtime path. The parenthesized argument block invokes it.
 
 ## Syntax
 ```wds title="SystemName.wds"

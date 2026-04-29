@@ -4,11 +4,11 @@ title: Module
 
 # Module
 
-A `module` groups everything related to a major functionality: its processes, states, contexts, and components. It is the primary unit of organisation in a WORDS specification below the `system` level. Every module listed in the `system` block has a corresponding module definition somewhere in the project.
+A `module` owns one functional boundary: its processes, states, contexts, and components. It is the primary unit of organisation in a WORDS specification below the `system` level. Every module listed in the `system` block has a corresponding module definition somewhere in the project.
 
 ## Purpose
 
-A module is a boundary. Everything inside it — processes, states, contexts, screens, providers, adapters, interfaces — belongs to that functionality and is owned by that module. Other modules can reference its exposed components — like views or interfaces — but any interaction at the functional level is explicit and happens through the other module's interface.
+A module is a boundary. Everything inside it — processes, states, contexts, screens, providers, adapters, interfaces — belongs to that functional area and is owned by that module. Other modules can reference its exposed components — like views or interfaces — but any behavioral interaction is explicit and happens through the other module's interface.
 
 This boundary is not just organisational. It determines where behavior lives, where a change needs to be made, and how the system modules communicate.
 
@@ -89,7 +89,7 @@ Modules are isolated by design. A module does not reach into another module's st
 
 A module's API can take two forms. The first exposes access to runtime components within the module's own scope — other modules call these directly through the module's interface. The second exposes a subscription mechanism — a module declares a handler interface describing the shape of a callback, other modules implement that interface and register themselves, and when the owning module fires the event every registered handler is called.
 
-Context sharing across module boundaries is handled by `system` directly. A module can persist a context using `system.setContext`, making it available to any other module that retrieves it using `system.getContext`. This is the only mechanism through which contexts cross module boundaries.
+Shared context storage across module boundaries is handled by `system` directly. A module can persist a context using `system.setContext`, making it available to any other module that retrieves it using `system.getContext`. This is the only built-in store for named context values. Modules may still exchange typed values through explicit APIs, handlers, and callbacks, but they do not read another module's state or context directly.
 
 The following example shows a products module subscribing to `RoutingModule` — implementing the `RouteSwitchHandler` interface and registering its own routes:
 
@@ -110,7 +110,7 @@ module ProductsModule (
 )
 ```
 
-This design means adding a new feature module never requires touching an existing one. Each module takes from the system or subscribes to what it needs and handles its own transitions entirely.
+This design keeps feature modules loosely coupled. Each module takes from the system or subscribes to what it needs and handles its own transitions internally.
 
 ## Examples
 
@@ -173,6 +173,6 @@ A module does not own other modules. Modules are siblings within the `system`, n
 
 ## Relationship to Other Constructs
 
-Every module listed in the `system` must have a corresponding module definition. That definition owns all processes, states, contexts, and components that belong to the functionality.
+Every module listed in the `system` must have a corresponding module definition. That definition owns all processes, states, contexts, and components that belong to the functional area.
 
 A module is stateful when it defines at least one process. A stateful module that enters an initial state autonomously declares a `start` state — that state must be defined as a standalone construct in the module's directory. A module without a `start` may still be stateful, with its states being triggered externally through an event subscription or an exposed interface.

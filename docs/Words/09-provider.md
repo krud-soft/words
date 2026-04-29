@@ -91,7 +91,7 @@ provider CatalogueProvider "Manages the product catalogue and search results" (
 
 ## `interface`
 
-`interface` declares the methods the provider exposes to other components. Each method is named, lists its parameters if any, and declares its return type if it produces one. Return types can be any `interface`, primitives or lists or collections:
+`interface` declares the methods the provider exposes to other components. Each method is named, lists its parameters if any, and declares its return type if it produces one. Return types can be primitives, interface components, lists, maps, optional values, or other declared types:
 
 ```wds title="CartModule/providers/CartProvider.wds"
 module CartModule

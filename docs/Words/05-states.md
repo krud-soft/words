@@ -4,11 +4,11 @@ title: State
 
 # State
 
-A `state` represents a condition the module is currently in. It is the smallest behavioral unit in a WORDS specification — the point at which the system has settled, is waiting, and is ready to produce an output that drives the next transition. Every state declares what it expects on entry, what it can return, and what it uses while resident.
+A `state` represents a condition the module is currently in. It is the smallest behavioral unit in a WORDS specification: the point at which the system has settled, is waiting for something to happen, and can return a context that drives the next transition. Every state declares what it expects on entry, what it can return, and what it uses while resident.
 
 ## Purpose
 
-A state is a stable condition — the system has arrived here, something is used or in progress, and the state will hold until it produces an output. That output is a context. The context is what the process uses to decide where to go next.
+A state is a stable condition. The system has arrived here, and the state remains active until it returns a context. A context is a typed message or result; it may describe the outcome of work performed by the state, but it is not the action itself. The process uses that returned context to decide where the module goes next.
 
 This framing determines what belongs in a state and what does not. A state does not contain branching logic, control flow, or conditional behavior across states. It contains a declaration of what it receives, what it can return, and what it uses.
 
@@ -30,7 +30,7 @@ The `receives` clause names the context the state expects on entry. A `?` prefix
 
 The `returns` block lists every context the state can produce. A process `when` rule exists for each — if a context appears in `returns` but has no corresponding `when` rule in any process, the specification is incomplete and the parser will reject it. The same applies to states — if a state is defined but never referenced in any process, the parser will reject it.
 
-The `uses` block declares what the state uses while resident — a screen, an adapter etc. or a combination. What is used depends on whether the state is presenting UI, triggering background work, or both.
+The `uses` block declares what the state activates while resident, such as a screen, an adapter, a provider, or a combination. What is used depends on whether the state is presenting UI, triggering background work, computing local data, or coordinating runtime calls.
 
 ## `receives`
 
@@ -79,7 +79,7 @@ state StartAuthenticating receives AccountCredentials (
 
 `StartAuthenticating` can produce either `AuthError` or `SystemUser`. Both must appear as the `returns` side of a `when` rule in the `Authentication` process.
 
-When a returned context needs to carry a side effect — like persisting a context — the `returns` block can expand to declare it inline:
+When producing a returned context requires a side effect — like persisting a context — the `returns` block can expand to declare that side effect inline:
 
 ```wds title="SessionModule/states/SessionValidating.wds"
 module SessionModule
@@ -105,7 +105,7 @@ state SessionValidating receives StoredSession (
 )
 ```
 
-The side effect executes before the context is returned — it has priority over the state's return. Only once the side effect has completed does the module transition. `system.dropContext` clears the stored context. This is not the only mechanism through which a context crosses module boundaries — a component exposed through a module's interface can also give access to contexts.
+The side effect must complete before the context is returned. Only after the side effect succeeds does the module transition. `system.dropContext` clears the stored context. Modules may also exchange typed values through explicit APIs, handlers, and callbacks, but shared named context storage is handled through `system`.
 
 ## `uses`
 
@@ -148,7 +148,7 @@ state Authenticated receives SystemUser (
 )
 ```
 
-`context` gives the used components direct access to the context the state received on entry. How components are `used` and how they consume the `context` depends on the target framework or implementation.
+Inside a state, `context` refers to the context the state received on entry. The state's `uses` block can pass that value into adapters, providers, runtime calls, or screens. A screen activated by the state also has direct access to the same `context`.
 
 A state with no `uses` is valid — it may be a transient condition that exists purely to hold a position in the process map while something external resolves.
 
@@ -228,12 +228,12 @@ state SessionValidating receives StoredSession (
 )
 ```
 
-An example in which the state mounts a screen and changes its output based on the interaction with a confirmation and a cancellation buttons:
+An example in which the state mounts a screen and changes its output based on confirmation and cancellation actions:
 
 ```wds
 
 module CatalogModule
-state OrderDiplaying receives OrderContext (
+state OrderDisplaying receives OrderContext (
     // can return order confirmation and cancel order contexts
     returns ConfirmOrderCtx, CancelOrderCtx
     
